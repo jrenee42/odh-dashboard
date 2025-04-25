@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Form, Stack, StackItem } from '@patternfly/react-core';
+import { Alert, Form, Stack, StackItem } from '@patternfly/react-core';
 import { Modal } from '@patternfly/react-core/deprecated';
 import { PersistentVolumeClaimKind } from '~/k8sTypes';
 import CreateNewStorageSection from '~/pages/projects/screens/spawner/storage/CreateNewStorageSection';
@@ -118,6 +118,16 @@ const BaseStorageModal: React.FC<BaseStorageModalProps> = ({
               disableStorageClassSelect={!!existingPvc}
               editableK8sName={!existingPvc}
             />
+          </StackItem>
+          {error && (
+          <StackItem>
+            <Alert
+              variant="danger"
+              isInline
+              title={'Error'}
+            >
+              {error.message}
+            </Alert>
           </StackItem>
           {children}
         </Stack>
