@@ -20,6 +20,7 @@ import { FeatureFlag } from '#~/concepts/areas/types';
 import { DevFeatureFlags } from '#~/types';
 import { useDevFlags } from './useDevFeatureFlags';
 
+// todo: change the props in the type! (and/or move to concepts/area/types ???? TODO)
 type Props = {
   dashboardConfig: Record<FeatureFlag | string, boolean | undefined>;
 } & DevFeatureFlags;
