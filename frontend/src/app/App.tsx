@@ -39,8 +39,8 @@ import TelemetrySetup from './TelemetrySetup';
 import { logout } from './appUtils';
 import QuickStarts from './QuickStarts';
 import SessionExpiredModal from './SessionExpiredModal';
-import DevFeatureFlagsBanner from '#~/featureFlags/DevFeatureFlagsBanner';
-import useDevFeatureFlags from '#~/featureFlags/useDevFeatureFlags';
+import DevFeatureFlagsBanner from './featureFlags/DevFeatureFlagsBanner';
+import useDevFeatureFlags from './featureFlags/useDevFeatureFlags';
 
 import './App.scss';
 
