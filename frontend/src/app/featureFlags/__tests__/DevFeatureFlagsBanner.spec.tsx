@@ -4,7 +4,7 @@ import { render, RenderOptions, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { PluginStoreProvider } from '@openshift/dynamic-plugin-sdk';
 import { PluginStore } from '@odh-dashboard/plugin-core';
-import DevFeatureFlagsBanner from '#~/featureFlags/DevFeatureFlagsBanner';
+import DevFeatureFlagsBanner from '#~/app/featureFlags/DevFeatureFlagsBanner';
 
 const renderOptions = (): RenderOptions => {
   const store = new PluginStore([]);

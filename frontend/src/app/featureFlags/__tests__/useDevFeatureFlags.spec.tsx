@@ -9,7 +9,7 @@ import { useBrowserStorage } from '#~/components/browserStorage/BrowserStorageCo
 import { definedFeatureFlags } from '#~/concepts/areas/const';
 import { DashboardConfigKind } from '#~/k8sTypes';
 import axios from '#~/utilities/axios';
-import useDevFeatureFlags from '#~/featureFlags/useDevFeatureFlags';
+import useDevFeatureFlags from '#~/app/featureFlags/useDevFeatureFlags';
 
 jest.mock('react-router-dom', () => ({
   useSearchParams: jest.fn(() => [
