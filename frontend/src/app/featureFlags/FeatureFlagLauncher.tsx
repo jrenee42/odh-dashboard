@@ -3,7 +3,8 @@ import { Dropdown, DropdownGroup, DropdownItem, MenuToggle, Tooltip } from '@pat
 import { FlagIcon, PencilAltIcon, RedoIcon } from '@patternfly/react-icons';
 import type { FeatureFlagProps } from '#~/types';
 import { DashboardCommonConfig } from '#~/k8sTypes.js';
-import { FeatureFlagModal } from './FeatureFlagModal';
+import FeatureFlagModal from '#~/app/featureFlags/FeatureFlagModal';
+
 import './AppLauncher.scss';
 
 export type FeatureFlagLauncherProps = FeatureFlagProps & {
