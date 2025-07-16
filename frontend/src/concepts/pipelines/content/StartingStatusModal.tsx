@@ -106,8 +106,8 @@ const StartingStatusModal: React.FC<StartingStatusModalProps> = ({ onClose }) =>
           {!isServerReadyAndCompletelyDone && (
             <StackItem>
               <Content>
-                This may take a while. You can close this modal and continue using the application.
-                The pipeline server will be available when initialization is complete.
+                This process may take a few minutes. You can close this modal and continue using the
+                application. The pipeline server will be available when initialization is complete.
               </Content>
             </StackItem>
           )}

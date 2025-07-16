@@ -44,13 +44,13 @@ const EnsureAPIAvailability: React.FC<EnsureAPIAvailabilityProps> = ({ children 
             <FlexItem>
               <Flex alignSelf={{ default: 'alignSelfCenter' }} gap={{ default: 'gapSm' }}>
                 <FlexItem>
-                  <Spinner size="md" />
+                  <Spinner size="xl" />
                 </FlexItem>
                 <FlexItem>{contents}</FlexItem>
               </Flex>
             </FlexItem>
             <FlexItem>
-              <div style={{ textAlign: 'center' }}>This may take a while</div>
+              <div style={{ textAlign: 'center' }}>This process may take a few minutes</div>
             </FlexItem>
           </Flex>
         </Bullseye>
