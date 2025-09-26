@@ -8,7 +8,6 @@ import {
 } from './types';
 
 export const techPreviewFlags = {
-  disableHardwareProfiles: true,
   disableModelRegistry: true,
 } satisfies Partial<DashboardCommonConfig>;
 
@@ -87,9 +86,6 @@ export const SupportedAreasStateMap: SupportedAreasState = {
   },
   [SupportedArea.ACCELERATOR_PROFILES]: {
     featureFlags: ['disableAcceleratorProfiles'],
-  },
-  [SupportedArea.HARDWARE_PROFILES]: {
-    featureFlags: ['disableHardwareProfiles'],
   },
   [SupportedArea.CLUSTER_SETTINGS]: {
     featureFlags: ['disableClusterManager'],
