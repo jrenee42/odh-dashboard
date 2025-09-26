@@ -23,12 +23,11 @@ export type PodSpecOptions = {
   resources?: ContainerResources;
   tolerations?: Toleration[];
   nodeSelector?: NodeSelector;
-  selectedAcceleratorProfile?: AcceleratorProfileKind;
+
   selectedHardwareProfile?: HardwareProfileKind;
 };
 
 export type PodSpecOptionsState<T extends PodSpecOptions> = {
-  acceleratorProfile: ReturnType<typeof useAcceleratorProfileFormState>;
   hardwareProfile: ReturnType<typeof useHardwareProfileConfig>;
   podSpecOptions: T;
 };

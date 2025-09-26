@@ -1,15 +1,12 @@
 import React from 'react';
-import { useIsAreaAvailable, SupportedArea } from '#~/concepts/areas';
 import { ContainerResources } from '#~/types';
 import { assemblePodSpecOptions } from '#~/utilities/podSpec';
 import { InferenceServiceKind, ServingRuntimeKind } from '#~/k8sTypes';
-import useServingAcceleratorProfileFormState from '#~/pages/modelServing/screens/projects/useServingAcceleratorProfileFormState';
 import { useAppContext } from '#~/app/AppContext';
 import { getModelServingSizes } from '#~/concepts/modelServing/modelServingSizesUtils';
 import { useDeepCompareMemoize } from '#~/utilities/useDeepCompareMemoize';
 import { ModelServingSize } from '#~/pages/modelServing/screens/types';
 import { getInferenceServiceSize } from '#~/pages/modelServing/utils';
-import { isGpuDisabled } from '#~/pages/modelServing/screens/projects/utils.ts';
 import useServingHardwareProfileConfig from './useServingHardwareProfileConfig';
 import { PodSpecOptions, PodSpecOptionsState } from './types';
 
@@ -46,20 +43,9 @@ export const useModelServingPodSpecOptionsState = (
     }
   }, [inferenceService, existingSize]);
 
-  const acceleratorProfile = useServingAcceleratorProfileFormState(
-    servingRuntime,
-    inferenceService,
-  );
   const hardwareProfile = useServingHardwareProfileConfig(inferenceService);
 
   // Handle GPU disabled state
-  const controlledAcceleratorProfile = {
-    ...acceleratorProfile,
-    formData:
-      servingRuntime && isGpuDisabled(servingRuntime)
-        ? { count: 0, useExistingSettings: false }
-        : acceleratorProfile.formData,
-  };
 
   let podSpecOptions: ModelServingPodSpecOptions = {
     resources: {},
@@ -109,10 +95,8 @@ export const useModelServingPodSpecOptionsState = (
 
     const { tolerations: newTolerations, resources: newResources } = assemblePodSpecOptions(
       resourceSettings,
-      acceleratorProfile.initialState,
-      acceleratorProfile.formData,
       undefined,
-      existingTolerations,
+
       undefined,
       existingResources,
     );
@@ -121,7 +105,6 @@ export const useModelServingPodSpecOptionsState = (
       resources: newResources,
       tolerations: newTolerations,
       nodeSelector: existingNodeSelector,
-      selectedAcceleratorProfile: acceleratorProfile.formData.profile,
     };
   }
 
@@ -131,7 +114,6 @@ export const useModelServingPodSpecOptionsState = (
       selectedSize: modelSize,
       setSelectedSize: setModelSize,
     },
-    acceleratorProfile: controlledAcceleratorProfile,
     hardwareProfile,
     podSpecOptions,
   };

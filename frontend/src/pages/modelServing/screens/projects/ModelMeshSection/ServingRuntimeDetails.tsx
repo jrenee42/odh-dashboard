@@ -18,10 +18,7 @@ import { useModelServingPodSpecOptionsState } from '#~/concepts/hardwareProfiles
 import { useIsAreaAvailable, SupportedArea } from '#~/concepts/areas';
 import ScopedLabel from '#~/components/ScopedLabel';
 import { ScopedType } from '#~/pages/modelServing/screens/const';
-import {
-  getHardwareProfileDisplayName,
-  isHardwareProfileEnabled,
-} from '#~/pages/hardwareProfiles/utils.ts';
+import { getHardwareProfileDisplayName } from '#~/pages/hardwareProfiles/utils.ts';
 import { getProjectModelServingPlatform } from '#~/pages/modelServing/screens/projects/utils.ts';
 import { ServingRuntimePlatform } from '#~/types.ts';
 import useServingPlatformStatuses from '#~/pages/modelServing/useServingPlatformStatuses.ts';
@@ -36,7 +33,6 @@ type ServingRuntimeDetailsProps = {
 const ServingRuntimeDetails: React.FC<ServingRuntimeDetailsProps> = ({ project, obj, isvc }) => {
   const { dashboardConfig } = React.useContext(AppContext);
   const isProjectScopedAvailable = useIsAreaAvailable(SupportedArea.DS_PROJECT_SCOPED).status;
-  const isHardwareProfileAvailable = useIsAreaAvailable(SupportedArea.HARDWARE_PROFILES).status;
   const { currentProject } = React.useContext(ProjectDetailsContext);
   const servingPlatformStatuses = useServingPlatformStatuses();
   const { platform: currentProjectServingPlatform } = getProjectModelServingPlatform(
@@ -45,13 +41,12 @@ const ServingRuntimeDetails: React.FC<ServingRuntimeDetailsProps> = ({ project, 
   );
   const isModelMesh = currentProjectServingPlatform === ServingRuntimePlatform.MULTI;
 
+  // oh g-d....lots to do here...
   const {
     acceleratorProfile: { initialState: initialAcceleratorProfileState },
     hardwareProfile,
   } = useModelServingPodSpecOptionsState(obj, isvc, isModelMesh);
-  const enabledAcceleratorProfiles = initialAcceleratorProfileState.acceleratorProfiles.filter(
-    (ac) => ac.spec.enabled,
-  );
+
   const resources = isvc?.spec.predictor.model?.resources || obj.spec.containers[0].resources;
   const sizes = getModelServingSizes(dashboardConfig);
   const size = sizes.find(
@@ -86,7 +81,7 @@ const ServingRuntimeDetails: React.FC<ServingRuntimeDetailsProps> = ({ project, 
           </DescriptionListDescription>
         </DescriptionListGroup>
       )}
-      {isHardwareProfileAvailable && !isModelMesh && (
+      {!isModelMesh && (
         <DescriptionListGroup>
           <DescriptionListTerm>Hardware profile</DescriptionListTerm>
           <DescriptionListDescription data-testid="hardware-section">
@@ -103,11 +98,6 @@ const ServingRuntimeDetails: React.FC<ServingRuntimeDetailsProps> = ({ project, 
                       </ScopedLabel>
                     )}
                 </FlexItem>
-                <Flex>
-                  {!isHardwareProfileEnabled(hardwareProfile.initialHardwareProfile)
-                    ? '(disabled)'
-                    : ''}
-                </Flex>
               </Flex>
             ) : hardwareProfile.formData.useExistingSettings ? (
               'Unknown'
@@ -116,46 +106,6 @@ const ServingRuntimeDetails: React.FC<ServingRuntimeDetailsProps> = ({ project, 
             )}
           </DescriptionListDescription>
         </DescriptionListGroup>
-      )}
-      {!isHardwareProfileAvailable && (
-        <>
-          <DescriptionListGroup data-testid="accelerator-section">
-            <DescriptionListTerm>Accelerator</DescriptionListTerm>
-            <DescriptionListDescription>
-              {initialAcceleratorProfileState.acceleratorProfile ? (
-                <>
-                  {initialAcceleratorProfileState.acceleratorProfile.spec.displayName}
-                  {isProjectScopedAvailable &&
-                    initialAcceleratorProfileState.acceleratorProfile.metadata.namespace ===
-                      project && (
-                      <>
-                        {' '}
-                        <ScopedLabel isProject color="blue" isCompact>
-                          {ScopedType.Project}
-                        </ScopedLabel>
-                      </>
-                    )}
-                  {!initialAcceleratorProfileState.acceleratorProfile.spec.enabled && ' (disabled)'}
-                </>
-              ) : enabledAcceleratorProfiles.length === 0 ? (
-                'No accelerator enabled'
-              ) : initialAcceleratorProfileState.unknownProfileDetected ? (
-                'Unknown'
-              ) : (
-                'No accelerator selected'
-              )}
-            </DescriptionListDescription>
-          </DescriptionListGroup>
-          {!initialAcceleratorProfileState.unknownProfileDetected &&
-            initialAcceleratorProfileState.acceleratorProfile && (
-              <DescriptionListGroup>
-                <DescriptionListTerm>Number of accelerators</DescriptionListTerm>
-                <DescriptionListDescription>
-                  {initialAcceleratorProfileState.count}
-                </DescriptionListDescription>
-              </DescriptionListGroup>
-            )}
-        </>
       )}
     </DescriptionList>
   );
