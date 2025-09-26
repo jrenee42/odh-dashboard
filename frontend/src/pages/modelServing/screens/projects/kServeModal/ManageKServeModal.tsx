@@ -150,7 +150,6 @@ const ManageKServeModal: React.FC<ManageKServeModalProps> = ({
   });
 
   const profileIdentifiers = useProfileIdentifiers(
-    podSpecOptionsState.acceleratorProfile.formData.profile,
     podSpecOptionsState.hardwareProfile.formData.selectedProfile,
   );
 

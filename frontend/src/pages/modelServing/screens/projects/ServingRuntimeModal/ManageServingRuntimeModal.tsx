@@ -71,7 +71,6 @@ const ManageServingRuntimeModal: React.FC<ManageServingRuntimeModalProps> = ({
   );
 
   const profileIdentifiers = useProfileIdentifiers(
-    podSpecOptionsState.acceleratorProfile.formData.profile,
     podSpecOptionsState.hardwareProfile.formData.selectedProfile,
   );
 

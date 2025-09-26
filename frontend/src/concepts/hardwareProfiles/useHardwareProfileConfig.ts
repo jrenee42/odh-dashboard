@@ -133,11 +133,7 @@ export const useHardwareProfileConfig = (
     profilesLoadError = dashboardProfilesLoadError || projectScopedProfilesLoadError;
   }
 
-  const hardwareProfilesAvailable = useIsAreaAvailable(SupportedArea.HARDWARE_PROFILES).status;
-  const isFormDataValid = React.useMemo(
-    () => (hardwareProfilesAvailable ? isHardwareProfileConfigValid(formData) : true),
-    [formData, hardwareProfilesAvailable],
-  );
+  const isFormDataValid = React.useMemo(() => isHardwareProfileConfigValid(formData), [formData]);
 
   const { dashboardNamespace } = useDashboardNamespace();
 

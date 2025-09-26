@@ -112,11 +112,7 @@ export const SupportedAreasStateMap: SupportedAreasState = {
   },
   [SupportedArea.DS_PROJECT_SCOPED]: {
     featureFlags: ['disableProjectScoped'],
-    reliantAreas: [
-      SupportedArea.WORKBENCHES,
-      SupportedArea.HARDWARE_PROFILES,
-      SupportedArea.MODEL_SERVING,
-    ],
+    reliantAreas: [SupportedArea.WORKBENCHES, SupportedArea.MODEL_SERVING],
   },
   [SupportedArea.DS_PROJECTS_PERMISSIONS]: {
     featureFlags: ['disableProjectSharing'],

@@ -39,24 +39,18 @@ export const formatNodeSelector = (selector: NodeSelector): string[] =>
 export const formatResource = (identifier: string, request: string, limit: string): string =>
   `${identifier}: Request = ${request}; Limit = ${limit}`;
 
-export const useProfileIdentifiers = (
-  acceleratorProfile?: AcceleratorProfileKind,
-  hardwareProfile?: HardwareProfileKind,
-): string[] => {
+export const useProfileIdentifiers = (hardwareProfile?: HardwareProfileKind): string[] => {
   const [identifiers, setIdentifiers] = React.useState<string[]>([]);
-  const isHardwareProfilesAvailable = useIsAreaAvailable(SupportedArea.HARDWARE_PROFILES).status;
 
   React.useEffect(() => {
-    if (isHardwareProfilesAvailable && hardwareProfile) {
+    if (hardwareProfile) {
       const profileIdentifiers =
         hardwareProfile.spec.identifiers?.map((identifier) => identifier.identifier) ?? [];
       setIdentifiers(profileIdentifiers);
-    } else if (acceleratorProfile) {
-      setIdentifiers([acceleratorProfile.spec.identifier]);
     } else {
       setIdentifiers([]);
     }
-  }, [acceleratorProfile, hardwareProfile, isHardwareProfilesAvailable]);
+  }, [hardwareProfile]);
 
   return identifiers;
 };
