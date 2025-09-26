@@ -23,7 +23,6 @@ import { BYONImageAccelerators } from './BYONImageAccelerators';
 type BYONImagesTableRowProps = {
   obj: BYONImage;
   rowIndex: number;
-  acceleratorProfiles: FetchState<AcceleratorProfileKind[]>;
   hardwareProfiles: ReturnType<typeof useHardwareProfilesByFeatureVisibility>;
   onEditImage: (obj: BYONImage) => void;
   onDeleteImage: (obj: BYONImage) => void;
@@ -32,12 +31,10 @@ type BYONImagesTableRowProps = {
 const BYONImagesTableRow: React.FC<BYONImagesTableRowProps> = ({
   obj,
   rowIndex,
-  acceleratorProfiles,
   hardwareProfiles,
   onEditImage,
   onDeleteImage,
 }) => {
-  const isHardwareProfileAvailable = useIsAreaAvailable(SupportedArea.HARDWARE_PROFILES).status;
   const [isExpanded, setExpanded] = React.useState(false);
   const columnModifier =
     obj.software.length > 0 && obj.packages.length > 0
@@ -70,15 +67,9 @@ const BYONImagesTableRow: React.FC<BYONImagesTableRowProps> = ({
         <Td dataLabel="Enable" modifier="nowrap">
           <BYONImageStatusToggle image={obj} />
         </Td>
-        {isHardwareProfileAvailable ? (
-          <Td dataLabel="Recommended hardware profiles">
-            <BYONImageHardwareProfiles image={obj} hardwareProfiles={hardwareProfiles} />
-          </Td>
-        ) : (
-          <Td dataLabel="Recommended accelerators">
-            <BYONImageAccelerators image={obj} acceleratorProfiles={acceleratorProfiles} />
-          </Td>
-        )}
+        <Td dataLabel="Recommended hardware profiles">
+          <BYONImageHardwareProfiles image={obj} hardwareProfiles={hardwareProfiles} />
+        </Td>
         <Td dataLabel="Provider">{obj.provider}</Td>
         <Td dataLabel="Imported">
           <span style={{ whiteSpace: 'nowrap' }}>
