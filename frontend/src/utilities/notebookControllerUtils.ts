@@ -511,6 +511,7 @@ export const useNotebookProgress = (
   isStopped: boolean,
   events: EventKind[],
 ): NotebookProgressStep[] => {
+  console.log('22a: any events here???', events);
   const progressSteps: NotebookProgressStep[] = Object.values(ProgressionStep).map((step) => ({
     step: ProgressionStep[step],
     percentile: 0,

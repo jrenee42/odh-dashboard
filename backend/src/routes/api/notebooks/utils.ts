@@ -50,9 +50,8 @@ export const checkPodContainersReady = (pod: V1Pod): boolean => {
   if (containerStatuses.length === 0) {
     return false;
   }
-  return containerStatuses.every(
-    (containerStatus) => containerStatus.ready && containerStatus.state?.running,
-  );
+  console.log('(change)22a-3: checkPodContainersReady', containerStatuses);
+  return containerStatuses.every((containerStatus) => containerStatus.state?.running);
 };
 
 export const enableNotebook = async (

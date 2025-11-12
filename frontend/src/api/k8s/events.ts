@@ -26,8 +26,9 @@ export const useWatchNotebookEvents = (
   namespace: string,
   name: string,
   podUid?: string,
-): CustomWatchK8sResult<EventKind[]> =>
-  useK8sWatchResourceList(
+): CustomWatchK8sResult<EventKind[]> => {
+  console.log('22a-1: useWatchNotebookEvents', namespace, name, podUid);
+  const result = useK8sWatchResourceList(
     {
       isList: true,
       groupVersionKind: groupVersionKind(EventModel),
@@ -38,6 +39,11 @@ export const useWatchNotebookEvents = (
     },
     EventModel,
   );
+
+  console.log(`22a-2: useWatchNotebookEvents ${name}`, result);
+
+  return result;
+};
 
 // get all the events for all the pods in the namespace
 export const useWatchPodEvents = (namespace: string): CustomWatchK8sResult<EventKind[]> =>
