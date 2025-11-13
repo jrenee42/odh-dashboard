@@ -50,7 +50,7 @@ export const checkPodContainersReady = (pod: V1Pod): boolean => {
   if (containerStatuses.length === 0) {
     return false;
   }
-  console.log('(change)22a-3: checkPodContainersReady', containerStatuses);
+  console.log('ACK ACK ACK(change)22a-3: checkPodContainersReady', containerStatuses);
   return containerStatuses.every((containerStatus) => containerStatus.state?.running);
 };
 

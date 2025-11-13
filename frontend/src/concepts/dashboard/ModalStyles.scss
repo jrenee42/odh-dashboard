@@ -3,10 +3,14 @@
 .odh-modal {
   
   &__content-height {
-    overflow-y: hidden;
+    height: 500px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
   }
 
   &__filled-stack-item {
-    overflow-y: hidden;
+    overflow-y: auto;
+    min-height: 0; // Critical for flexbox scrolling
   }
 } 

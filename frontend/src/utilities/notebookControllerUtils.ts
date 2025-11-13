@@ -572,7 +572,7 @@ export const useNotebookProgress = (
   });
 
   // Filter out pending optional steps
-  return progressSteps.filter(
+  const result = progressSteps.filter(
     (notebookProgressStep) =>
       !(
         OptionalSteps.includes(notebookProgressStep.step) &&
@@ -580,6 +580,8 @@ export const useNotebookProgress = (
           EventStatus.PENDING
       ),
   );
+  console.log('22abc: result', result);
+  return result;
 };
 
 export const useCheckJupyterEnabled = (): boolean => {

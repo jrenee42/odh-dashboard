@@ -198,11 +198,7 @@ const StartNotebookModal: React.FC<StartNotebookModalProps> = ({
   );
 
   const renderProgress = () => (
-    <Flex
-      direction={{ default: 'column' }}
-      gap={{ default: 'gapMd' }}
-      style={{ overflowY: 'auto', height: '100%' }}
-    >
+    <Flex direction={{ default: 'column' }} gap={{ default: 'gapMd' }} style={{ height: '100%' }}>
       <FlexItem>
         <Flex gap={{ default: 'gapSm' }} flexWrap={{ default: 'nowrap' }}>
           <FlexItem>
@@ -220,7 +216,7 @@ const StartNotebookModal: React.FC<StartNotebookModalProps> = ({
           </FlexItem>
         </Flex>
       </FlexItem>
-      <FlexItem flex={{ default: 'flex_1' }} style={{ overflowY: 'auto' }}>
+      <FlexItem flex={{ default: 'flex_1' }} style={{ overflowY: 'scroll', minHeight: 0 }}>
         <ProgressStepper isVertical data-testid="notebook-startup-steps">
           {notebookProgress.map((progressStep, i) => (
             <ProgressStep
@@ -264,7 +260,7 @@ const StartNotebookModal: React.FC<StartNotebookModalProps> = ({
         }
       />
       <ModalBody className="odh-modal__content-height">
-        <Stack hasGutter>
+        <Stack hasGutter style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
           {renderLastUpdate()}
           {renderStatus()}
           <StackItem>
