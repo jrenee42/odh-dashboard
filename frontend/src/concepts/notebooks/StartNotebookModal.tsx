@@ -37,7 +37,7 @@ import { EventKind, NotebookKind } from '#~/k8sTypes';
 import { useNotebookProgress } from '#~/utilities/notebookControllerUtils';
 import EventLog from '#~/concepts/k8s/EventLog/EventLog';
 import NotebookStatusLabel from './NotebookStatusLabel';
-import '#~/concepts/dashboard/ModalStyles.scss';
+import './StartNotebookModal.scss';
 
 const PROGRESS_TAB = 'Progress';
 const EVENT_LOG_TAB = 'Events log';
@@ -259,7 +259,7 @@ const StartNotebookModal: React.FC<StartNotebookModalProps> = ({
           </Flex>
         }
       />
-      <ModalBody className="odh-modal__content-height">
+      <ModalBody className="start-notebook-modal__content-height">
         <Stack hasGutter style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
           {renderLastUpdate()}
           {renderStatus()}
@@ -283,7 +283,7 @@ const StartNotebookModal: React.FC<StartNotebookModalProps> = ({
               />
             </Tabs>
           </StackItem>
-          <StackItem isFilled className="odh-modal__filled-stack-item">
+          <StackItem isFilled className="start-notebook-modal__filled-stack-item">
             {activeTab === PROGRESS_TAB ? renderProgress() : renderLogs()}
           </StackItem>
         </Stack>
