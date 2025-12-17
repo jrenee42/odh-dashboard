@@ -38,59 +38,6 @@ type FormModalProps = {
   alertLinks?: React.ReactNode;
 };
 
-type FocusableDivProps = {
-  children: React.ReactNode;
-  onEnterPress: () => void;
-  clickEnterButtonLabel: string;
-};
-
-const FocusableDiv: React.FC<FocusableDivProps> = ({
-  children,
-  onEnterPress,
-  clickEnterButtonLabel,
-}) => {
-  const divRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    // As soon as this mounts, move focus here instead of the close button
-    divRef.current?.focus();
-  }, []);
-
-  const clickEnterButtonLabelText = `Press Enter to activate the ${clickEnterButtonLabel} button.`;
-
-  const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
-    if (event.key !== 'Enter') {
-      return;
-    }
-    // Don't capture Enter for textareas (they need it for newlines)
-    if (event.target instanceof HTMLTextAreaElement) {
-      return;
-    }
-    event.preventDefault();
-    event.stopPropagation();
-    onEnterPress();
-  };
-
-  return (
-    <div
-      ref={divRef}
-      onKeyDownCapture={handleKeyDown}
-      tabIndex={-1}
-      role="group"
-      aria-label={clickEnterButtonLabelText}
-      style={{
-        height: '100%',
-        display: 'flex',
-        flexDirection: 'column',
-        outline: 'none',
-        flex: 1,
-      }}
-    >
-      {children}
-    </div>
-  );
-};
-
 // Footer component - the callbacks are stable via refs so the footer only re-renders
 // when isSubmitDisabled, isSubmitting, or error changes
 const FormModalFooter = React.memo(
@@ -200,11 +147,11 @@ const FormModal: React.FC<FormModalProps> = ({
 }) => {
   const submitButtonRef = useRef<HTMLButtonElement>(null);
   const cancelButtonRef = useRef<HTMLButtonElement>(null);
+  const wrapperRef = useRef<HTMLDivElement>(null);
   const enterPressTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const headingId = useId();
 
-  // Use refs for callbacks so that the FocusableDiv doesn't need to re-render
-  // when canSubmit changes
+  // Use refs for callbacks so handlers don't need to re-render
   const canSubmitRef = useRef(canSubmit);
   const onSubmitRef = useRef(onSubmit);
   const onCancelRef = useRef(onCancel);
@@ -232,7 +179,7 @@ const FormModal: React.FC<FormModalProps> = ({
     [],
   );
 
-  // Stable callback that reads from refs
+  // Handle Enter key - trigger submit or cancel based on form validity
   const handleEnterPress = useCallback(() => {
     const shouldSubmit = canSubmitRef.current;
     const button = shouldSubmit ? submitButtonRef.current : cancelButtonRef.current;
@@ -257,14 +204,54 @@ const FormModal: React.FC<FormModalProps> = ({
     }
   }, []);
 
-  // Get the current button label for accessibility
-  const clickEnterButtonLabel = canSubmit ? submitLabel : 'Cancel';
+  // Attach native keydown listener to the modal wrapper
+  // This captures Enter from any focused element inside the modal
+  useEffect(() => {
+    const wrapper = wrapperRef.current;
+    if (!wrapper) {
+      return;
+    }
 
-  const modalContents = (
-    <FocusableDiv onEnterPress={handleEnterPress} clickEnterButtonLabel={clickEnterButtonLabel}>
-      {contents}
-    </FocusableDiv>
-  );
+    // Focus the wrapper on mount so it can receive keyboard events
+    wrapper.focus();
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== 'Enter') {
+        return;
+      }
+      // Don't capture Enter for textareas (they need it for newlines)
+      if (event.target instanceof HTMLTextAreaElement) {
+        return;
+      }
+      event.preventDefault();
+      event.stopPropagation();
+      handleEnterPress();
+    };
+
+    // Refocus wrapper when focus leaves the modal (e.g., after dropdown portal closes)
+    const handleFocusOut = (event: FocusEvent) => {
+      // Check if focus is moving outside the wrapper
+      const { relatedTarget } = event;
+      const isRelatedTargetInWrapper =
+        relatedTarget instanceof Node && wrapper.contains(relatedTarget);
+      if (!isRelatedTargetInWrapper) {
+        // Use requestAnimationFrame to allow the focus to settle, then refocus if needed
+        requestAnimationFrame(() => {
+          if (!document.activeElement || !wrapper.contains(document.activeElement)) {
+            wrapper.focus();
+          }
+        });
+      }
+    };
+
+    // Use capture phase to intercept before child elements
+    wrapper.addEventListener('keydown', handleKeyDown, true);
+    wrapper.addEventListener('focusout', handleFocusOut);
+    return () => {
+      wrapper.removeEventListener('keydown', handleKeyDown, true);
+      wrapper.removeEventListener('focusout', handleFocusOut);
+    };
+  }, [handleEnterPress]);
 
   // Stable handlers for buttons (these don't change on re-render)
   const handleSubmitClick = useCallback(() => {
@@ -286,36 +273,38 @@ const FormModal: React.FC<FormModalProps> = ({
       aria-label={typeof title === 'string' ? title : undefined}
       aria-labelledby={typeof title !== 'string' ? headingId : undefined}
     >
-      <ModalHeader
-        title={typeof title === 'string' ? title : undefined}
-        description={typeof title === 'string' ? description : undefined}
-        data-testid="form-modal-header"
-      >
-        {typeof title !== 'string' ? (
-          <>
-            <span id={headingId}>{title}</span>
-            {description && <div style={{ marginTop: '8px' }}>{description}</div>}
-          </>
-        ) : null}
-      </ModalHeader>
-      <ModalBody className={bodyClassName} aria-label={bodyLabel}>
-        {modalContents}
-      </ModalBody>
-      <ModalFooter>
-        <FormModalFooter
-          submitLabel={submitLabel}
-          submitButtonVariant={submitButtonVariant}
-          onSubmitClick={handleSubmitClick}
-          onCancelClick={handleCancelClick}
-          submitButtonRef={submitButtonRef}
-          cancelButtonRef={cancelButtonRef}
-          isSubmitDisabled={!canSubmit}
-          isSubmitting={isSubmitting}
-          error={error}
-          alertTitle={alertTitle}
-          alertLinks={alertLinks}
-        />
-      </ModalFooter>
+      <div ref={wrapperRef} tabIndex={-1} style={{ outline: 'none' }}>
+        <ModalHeader
+          title={typeof title === 'string' ? title : undefined}
+          description={typeof title === 'string' ? description : undefined}
+          data-testid="form-modal-header"
+        >
+          {typeof title !== 'string' ? (
+            <>
+              <span id={headingId}>{title}</span>
+              {description && <div style={{ marginTop: '8px' }}>{description}</div>}
+            </>
+          ) : null}
+        </ModalHeader>
+        <ModalBody className={bodyClassName} aria-label={bodyLabel}>
+          {contents}
+        </ModalBody>
+        <ModalFooter>
+          <FormModalFooter
+            submitLabel={submitLabel}
+            submitButtonVariant={submitButtonVariant}
+            onSubmitClick={handleSubmitClick}
+            onCancelClick={handleCancelClick}
+            submitButtonRef={submitButtonRef}
+            cancelButtonRef={cancelButtonRef}
+            isSubmitDisabled={!canSubmit}
+            isSubmitting={isSubmitting}
+            error={error}
+            alertTitle={alertTitle}
+            alertLinks={alertLinks}
+          />
+        </ModalFooter>
+      </div>
     </Modal>
   );
 };
