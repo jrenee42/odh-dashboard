@@ -270,7 +270,6 @@ export const ConfigurePipelinesServerModal: React.FC<ConfigurePipelinesServerMod
       variant="medium"
       onClose={onCancel}
       onSubmit={submit}
-      onCancel={onCancel}
       canSubmit={canSubmit && !fetching}
       isSubmitting={fetching}
       submitLabel="Configure pipeline server"

@@ -58,7 +58,6 @@ const ManageNodeSelectorModal: React.FC<ManageNodeSelectorModalProps> = ({
       variant="medium"
       onClose={onClose}
       onSubmit={handleSubmit}
-      onCancel={onClose}
       canSubmit={canSubmit}
       submitLabel={existingNodeSelector ? 'Update' : 'Add'}
       contents={contents}

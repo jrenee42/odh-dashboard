@@ -109,7 +109,6 @@ const BaseStorageModal: React.FC<BaseStorageModalProps> = ({
       variant="medium"
       onClose={handleCancel}
       onSubmit={submit}
-      onCancel={handleCancel}
       canSubmit={canCreate}
       isSubmitting={actionInProgress}
       submitLabel={submitLabel}
