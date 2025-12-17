@@ -59,17 +59,22 @@ const FocusableDiv: React.FC<FocusableDivProps> = ({
   const clickEnterButtonLabelText = `Press Enter to activate the ${clickEnterButtonLabel} button.`;
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
-    if (event.key === 'Enter') {
-      event.preventDefault();
-      event.stopPropagation();
-      onEnterPress();
+    if (event.key !== 'Enter') {
+      return;
     }
+    // Don't capture Enter for textareas (they need it for newlines)
+    if (event.target instanceof HTMLTextAreaElement) {
+      return;
+    }
+    event.preventDefault();
+    event.stopPropagation();
+    onEnterPress();
   };
 
   return (
     <div
       ref={divRef}
-      onKeyDown={handleKeyDown}
+      onKeyDownCapture={handleKeyDown}
       tabIndex={-1}
       role="group"
       aria-label={clickEnterButtonLabelText}
