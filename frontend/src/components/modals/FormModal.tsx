@@ -221,6 +221,11 @@ const FormModal: React.FC<FormModalProps> = ({
       if (event.target instanceof HTMLTextAreaElement) {
         return;
       }
+      // Don't capture Enter for buttons - let them handle it natively
+      // This ensures that when Cancel (or any button) is focused, Enter activates it
+      if (event.target instanceof HTMLButtonElement) {
+        return;
+      }
       event.preventDefault();
       event.stopPropagation();
       handleEnterPress();
