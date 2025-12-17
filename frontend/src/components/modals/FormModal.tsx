@@ -38,81 +38,39 @@ type FormModalProps = {
   alertLinks?: React.ReactNode;
 };
 
-// Elements that should NOT trigger Enter key handling (they have their own Enter behavior)
-const ENTER_KEY_EXCLUSIONS = ['TEXTAREA', 'A'];
-
-// Check if the element is an OPEN toggle button (dropdown, select, etc.) that uses Enter for interaction
-const isOpenToggleButton = (element: Element): boolean => {
-  if (element.tagName !== 'BUTTON') {
-    return false;
-  }
-  // Only skip if the toggle is currently open (aria-expanded="true")
-  // When closed, we want Enter to trigger our form action
-  if (element.getAttribute('aria-expanded') === 'true') {
-    return true;
-  }
-  return false;
-};
-
-// Check if the element is within a dropdown menu or similar interactive component
-const isWithinInteractiveComponent = (element: Element): boolean => {
-  // Check for PatternFly dropdown menu items, select options, etc.
-  const interactiveSelectors = [
-    '[class*="pf-v5-c-menu"]',
-    '[class*="pf-v5-c-dropdown"]',
-    '[class*="pf-v5-c-select__menu"]',
-    '[role="listbox"]',
-    '[role="menu"]',
-  ];
-  return interactiveSelectors.some((selector) => element.closest(selector) !== null);
-};
-
-type KeyCaptureWrapperProps = {
+type FocusableDivProps = {
   children: React.ReactNode;
   onEnterPress: () => void;
   clickEnterButtonLabel: string;
 };
 
-const KeyCaptureWrapper: React.FC<KeyCaptureWrapperProps> = ({
+const FocusableDiv: React.FC<FocusableDivProps> = ({
   children,
   onEnterPress,
   clickEnterButtonLabel,
 }) => {
+  const divRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    // As soon as this mounts, move focus here instead of the close button
+    divRef.current?.focus();
+  }, []);
+
   const clickEnterButtonLabelText = `Press Enter to activate the ${clickEnterButtonLabel} button.`;
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
-    if (event.key !== 'Enter') {
-      return;
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      event.stopPropagation();
+      onEnterPress();
     }
-
-    const { target } = event;
-    if (!(target instanceof Element)) {
-      return;
-    }
-
-    // Don't handle Enter for excluded elements (textareas, links)
-    if (ENTER_KEY_EXCLUSIONS.includes(target.tagName)) {
-      return;
-    }
-
-    // Don't handle Enter for open toggle buttons (dropdowns, selects)
-    if (isOpenToggleButton(target)) {
-      return;
-    }
-
-    // Don't handle Enter within interactive components like open dropdown menus
-    if (isWithinInteractiveComponent(target)) {
-      return;
-    }
-
-    event.preventDefault();
-    event.stopPropagation();
-    onEnterPress();
   };
 
   return (
     <div
+      ref={divRef}
       onKeyDown={handleKeyDown}
+      tabIndex={-1}
       role="group"
       aria-label={clickEnterButtonLabelText}
       style={{
@@ -298,12 +256,9 @@ const FormModal: React.FC<FormModalProps> = ({
   const clickEnterButtonLabel = canSubmit ? submitLabel : 'Cancel';
 
   const modalContents = (
-    <KeyCaptureWrapper
-      onEnterPress={handleEnterPress}
-      clickEnterButtonLabel={clickEnterButtonLabel}
-    >
+    <FocusableDiv onEnterPress={handleEnterPress} clickEnterButtonLabel={clickEnterButtonLabel}>
       {contents}
-    </KeyCaptureWrapper>
+    </FocusableDiv>
   );
 
   // Stable handlers for buttons (these don't change on re-render)
