@@ -136,7 +136,7 @@ const FormModal: React.FC<FormModalProps> = ({
   contents,
   title,
   description,
-  disableFocusTrap,
+  disableFocusTrap = false,
   dataTestId = 'form-modal',
   bodyClassName = 'odh-modal__content-height',
   variant = 'medium',
