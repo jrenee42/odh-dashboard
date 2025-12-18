@@ -20,6 +20,7 @@ import '#~/concepts/dashboard/ModalStyles.scss';
 type FormModalProps = {
   onClose: () => void;
   onSubmit: () => void;
+  onCancel?: () => void;
   canSubmit: boolean;
   isSubmitting?: boolean;
   submitLabel: string;
@@ -127,6 +128,7 @@ FormModalFooter.displayName = 'FormModalFooter';
 const FormModal: React.FC<FormModalProps> = ({
   onClose,
   onSubmit,
+  onCancel,
   canSubmit,
   isSubmitting,
   submitLabel,
@@ -152,7 +154,8 @@ const FormModal: React.FC<FormModalProps> = ({
   // Use refs for callbacks so handlers don't need to re-render
   const canSubmitRef = useRef(canSubmit);
   const onSubmitRef = useRef(onSubmit);
-  const onCloseRef = useRef(onClose);
+  // Use onCancel if provided, otherwise fall back to onClose
+  const onCancelRef = useRef(onCancel ?? onClose);
 
   // Update refs when values change
   useEffect(() => {
@@ -164,8 +167,8 @@ const FormModal: React.FC<FormModalProps> = ({
   }, [onSubmit]);
 
   useEffect(() => {
-    onCloseRef.current = onClose;
-  }, [onClose]);
+    onCancelRef.current = onCancel ?? onClose;
+  }, [onCancel, onClose]);
 
   // Clear the enter press timeout on unmount to prevent stale callbacks
   useEffect(
@@ -196,7 +199,7 @@ const FormModal: React.FC<FormModalProps> = ({
         if (shouldSubmit) {
           onSubmitRef.current();
         } else {
-          onCloseRef.current();
+          onCancelRef.current();
         }
       }, 200);
     }
@@ -262,7 +265,7 @@ const FormModal: React.FC<FormModalProps> = ({
   }, []);
 
   const handleCancelClick = useCallback(() => {
-    onCloseRef.current();
+    onCancelRef.current();
   }, []);
 
   return (
