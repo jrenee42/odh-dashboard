@@ -1,15 +1,8 @@
 import * as React from 'react';
-import {
-  Form,
-  FormGroup,
-  Modal,
-  ModalBody,
-  ModalHeader,
-  ModalFooter,
-} from '@patternfly/react-core';
+import { Form, FormGroup } from '@patternfly/react-core';
 import { ConnectionTypeField, ConnectionTypeFieldType } from '#~/concepts/connectionTypes/types';
-import DashboardModalFooter from '#~/concepts/dashboard/DashboardModalFooter';
 import SimpleSelect, { SimpleSelectOption } from '#~/components/SimpleSelect';
+import FormModal from '#~/components/modals/FormModal';
 
 type Props = {
   row: { field: ConnectionTypeField; index: number };
@@ -43,10 +36,22 @@ export const ConnectionTypeMoveFieldToSectionModal: React.FC<Props> = ({
     options[0],
   );
 
+  const handleSubmit = React.useCallback(() => {
+    if (selectedSection) {
+      onSubmit(row.field, Number(selectedSection.key));
+      onClose();
+    }
+  }, [selectedSection, onSubmit, row.field, onClose]);
+
   return (
-    <Modal isOpen onClose={onClose} variant="medium">
-      <ModalHeader title="Move to section" />
-      <ModalBody>
+    <FormModal
+      title="Move to section"
+      onClose={onClose}
+      onSubmit={handleSubmit}
+      canSubmit={!!selectedSection}
+      submitLabel="Move"
+      variant="medium"
+      contents={
         <Form>
           <div>
             Select the section heading that <b>{row.field.name}</b> will be moved to.
@@ -62,20 +67,7 @@ export const ConnectionTypeMoveFieldToSectionModal: React.FC<Props> = ({
             />
           </FormGroup>
         </Form>
-      </ModalBody>
-      <ModalFooter>
-        <DashboardModalFooter
-          submitLabel="Move"
-          onCancel={onClose}
-          onSubmit={() => {
-            if (selectedSection) {
-              onSubmit(row.field, Number(selectedSection.key));
-              onClose();
-            }
-          }}
-          isSubmitDisabled={!selectedSection}
-        />
-      </ModalFooter>
-    </Modal>
+      }
+    />
   );
 };
