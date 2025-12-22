@@ -15,6 +15,7 @@ import {
   StackItem,
   ButtonProps,
 } from '@patternfly/react-core';
+import { createModalEnterHandler } from '#~/components/modals/modalUtils';
 import '#~/concepts/dashboard/ModalStyles.scss';
 
 type FormModalProps = {
@@ -205,8 +206,10 @@ const FormModal: React.FC<FormModalProps> = ({
     }
   }, []);
 
-  // Attach native keydown listener to the modal wrapper
-  // This captures Enter from any focused element inside the modal
+  // Create keydown handler using the shared utility
+  const handleKeyDown = createModalEnterHandler(handleEnterPress);
+
+  // Focus wrapper on mount and handle focus management
   useEffect(() => {
     const wrapper = wrapperRef.current;
     if (!wrapper) {
@@ -215,24 +218,6 @@ const FormModal: React.FC<FormModalProps> = ({
 
     // Focus the wrapper on mount so it can receive keyboard events
     wrapper.focus();
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key !== 'Enter') {
-        return;
-      }
-      // Don't capture Enter for textareas (they need it for newlines)
-      if (event.target instanceof HTMLTextAreaElement) {
-        return;
-      }
-      // Don't capture Enter for buttons - let them handle it natively
-      // This ensures that when Cancel (or any button) is focused, Enter activates it
-      if (event.target instanceof HTMLButtonElement) {
-        return;
-      }
-      event.preventDefault();
-      event.stopPropagation();
-      handleEnterPress();
-    };
 
     // Refocus wrapper when focus leaves the modal (e.g., after dropdown portal closes)
     const handleFocusOut = (event: FocusEvent) => {
@@ -250,14 +235,11 @@ const FormModal: React.FC<FormModalProps> = ({
       }
     };
 
-    // Use capture phase to intercept before child elements
-    wrapper.addEventListener('keydown', handleKeyDown, true);
     wrapper.addEventListener('focusout', handleFocusOut);
     return () => {
-      wrapper.removeEventListener('keydown', handleKeyDown, true);
       wrapper.removeEventListener('focusout', handleFocusOut);
     };
-  }, [handleEnterPress]);
+  }, []);
 
   // Stable handlers for buttons (these don't change on re-render)
   const handleSubmitClick = useCallback(() => {
@@ -279,7 +261,12 @@ const FormModal: React.FC<FormModalProps> = ({
       aria-label={typeof title === 'string' ? title : undefined}
       aria-labelledby={typeof title !== 'string' ? headingId : undefined}
     >
-      <div ref={wrapperRef} tabIndex={-1} style={{ outline: 'none' }}>
+      <div
+        ref={wrapperRef}
+        tabIndex={-1}
+        style={{ outline: 'none' }}
+        onKeyDownCapture={handleKeyDown}
+      >
         <ModalHeader
           title={typeof title === 'string' ? title : undefined}
           description={typeof title === 'string' ? description : undefined}

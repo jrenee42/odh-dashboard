@@ -10,7 +10,7 @@ import React from 'react';
  */
 export const createModalEnterHandler = (
   onEnterPress: () => void,
-): ((event: React.KeyboardEvent<HTMLDivElement>) => void) => {
+): React.KeyboardEventHandler<HTMLDivElement> => {
   return (event: React.KeyboardEvent<HTMLDivElement>) => {
     if (event.key === 'Enter') {
       // Don't capture Enter for textareas (they need it for newlines)
