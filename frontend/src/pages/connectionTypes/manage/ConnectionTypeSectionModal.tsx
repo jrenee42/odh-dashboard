@@ -1,20 +1,10 @@
 import * as React from 'react';
-import {
-  Form,
-  FormGroup,
-  TextInput,
-  TextArea,
-  Popover,
-  Modal,
-  ModalBody,
-  ModalHeader,
-  ModalFooter,
-} from '@patternfly/react-core';
+import { Form, FormGroup, TextInput, TextArea, Popover } from '@patternfly/react-core';
 import { OutlinedQuestionCircleIcon } from '@patternfly/react-icons';
 import { SectionField } from '#~/concepts/connectionTypes/types';
-import DashboardModalFooter from '#~/concepts/dashboard/DashboardModalFooter';
 import DashboardPopupIconButton from '#~/concepts/dashboard/DashboardPopupIconButton';
 import useGenericObjectState from '#~/utilities/useGenericObjectState';
+import FormModal from '#~/components/modals/FormModal';
 
 type Props = {
   field?: SectionField;
@@ -32,10 +22,22 @@ const ConnectionTypeSectionModal: React.FC<Props> = ({ field, onClose, onSubmit,
   const { name, description } = data;
   const isValid = name.length > 0;
 
+  const handleSubmit = React.useCallback(() => {
+    if (isValid) {
+      onSubmit({ type: 'section', name, description });
+      onClose();
+    }
+  }, [isValid, onSubmit, name, description, onClose]);
+
   return (
-    <Modal isOpen onClose={onClose} variant="medium" elementToFocus="#section-name">
-      <ModalHeader title={isEdit ? 'Edit section heading' : 'Add section heading'} />
-      <ModalBody>
+    <FormModal
+      title={isEdit ? 'Edit section heading' : 'Add section heading'}
+      onClose={onClose}
+      onSubmit={handleSubmit}
+      canSubmit={canSubmit && isValid}
+      submitLabel={isEdit ? 'Save' : 'Add'}
+      variant="medium"
+      contents={
         <Form>
           <FormGroup
             label="Section heading"
@@ -84,21 +86,8 @@ const ConnectionTypeSectionModal: React.FC<Props> = ({ field, onClose, onSubmit,
             />
           </FormGroup>
         </Form>
-      </ModalBody>
-      <ModalFooter>
-        <DashboardModalFooter
-          submitLabel={isEdit ? 'Save' : 'Add'}
-          onCancel={onClose}
-          onSubmit={() => {
-            if (isValid) {
-              onSubmit({ type: 'section', name, description });
-              onClose();
-            }
-          }}
-          isSubmitDisabled={!canSubmit || !isValid}
-        />
-      </ModalFooter>
-    </Modal>
+      }
+    />
   );
 };
 
