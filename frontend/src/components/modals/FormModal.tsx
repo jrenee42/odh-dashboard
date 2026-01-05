@@ -37,6 +37,8 @@ type FormModalProps = {
   error?: Error | React.ReactNode;
   alertTitle?: string;
   alertLinks?: React.ReactNode;
+  submitButtonTestId?: string;
+  cancelButtonTestId?: string;
 };
 
 // Footer component - the callbacks are stable via refs so the footer only re-renders
@@ -54,6 +56,8 @@ const FormModalFooter = React.memo(
     error,
     alertTitle,
     alertLinks,
+    submitButtonTestId,
+    cancelButtonTestId,
   }: {
     submitLabel: string;
     submitButtonVariant?: ButtonProps['variant'];
@@ -66,53 +70,60 @@ const FormModalFooter = React.memo(
     error?: Error | React.ReactNode;
     alertTitle?: string;
     alertLinks?: React.ReactNode;
-  }) => (
-    <Stack hasGutter style={{ flex: 'auto' }}>
-      {error && (
+    submitButtonTestId?: string;
+    cancelButtonTestId?: string;
+  }) => {
+    const submitDataId = submitButtonTestId ?? 'modal-submit-button';
+    const cancelDataId = cancelButtonTestId ?? 'modal-cancel-button';
+
+    return (
+      <Stack hasGutter style={{ flex: 'auto' }}>
+        {error && (
+          <StackItem>
+            <Alert
+              data-testid="error-message-alert"
+              isInline
+              variant="danger"
+              title={alertTitle}
+              actionLinks={alertLinks}
+            >
+              {error instanceof Error ? error.message : error}
+            </Alert>
+          </StackItem>
+        )}
         <StackItem>
-          <Alert
-            data-testid="error-message-alert"
-            isInline
-            variant="danger"
-            title={alertTitle}
-            actionLinks={alertLinks}
-          >
-            {error instanceof Error ? error.message : error}
-          </Alert>
+          <ActionList>
+            <ActionListGroup>
+              <ActionListItem>
+                <Button
+                  ref={submitButtonRef}
+                  key="submit"
+                  variant={submitButtonVariant}
+                  isDisabled={isSubmitDisabled}
+                  onClick={onSubmitClick}
+                  isLoading={isSubmitting}
+                  data-testid={submitDataId}
+                >
+                  {submitLabel}
+                </Button>
+              </ActionListItem>
+              <ActionListItem>
+                <Button
+                  ref={cancelButtonRef}
+                  key="cancel"
+                  variant="link"
+                  onClick={onCancelClick}
+                  data-testid={cancelDataId}
+                >
+                  Cancel
+                </Button>
+              </ActionListItem>
+            </ActionListGroup>
+          </ActionList>
         </StackItem>
-      )}
-      <StackItem>
-        <ActionList>
-          <ActionListGroup>
-            <ActionListItem>
-              <Button
-                ref={submitButtonRef}
-                key="submit"
-                variant={submitButtonVariant}
-                isDisabled={isSubmitDisabled}
-                onClick={onSubmitClick}
-                isLoading={isSubmitting}
-                data-testid="modal-submit-button"
-              >
-                {submitLabel}
-              </Button>
-            </ActionListItem>
-            <ActionListItem>
-              <Button
-                ref={cancelButtonRef}
-                key="cancel"
-                variant="link"
-                onClick={onCancelClick}
-                data-testid="modal-cancel-button"
-              >
-                Cancel
-              </Button>
-            </ActionListItem>
-          </ActionListGroup>
-        </ActionList>
-      </StackItem>
-    </Stack>
-  ),
+      </Stack>
+    );
+  },
 );
 FormModalFooter.displayName = 'FormModalFooter';
 
@@ -145,6 +156,8 @@ const FormModal: React.FC<FormModalProps> = ({
   error,
   alertTitle,
   alertLinks,
+  submitButtonTestId,
+  cancelButtonTestId,
 }) => {
   const submitButtonRef = useRef<HTMLButtonElement>(null);
   const cancelButtonRef = useRef<HTMLButtonElement>(null);
@@ -295,6 +308,8 @@ const FormModal: React.FC<FormModalProps> = ({
             error={error}
             alertTitle={alertTitle}
             alertLinks={alertLinks}
+            cancelButtonTestId={cancelButtonTestId}
+            submitButtonTestId={submitButtonTestId}
           />
         </ModalFooter>
       </div>
