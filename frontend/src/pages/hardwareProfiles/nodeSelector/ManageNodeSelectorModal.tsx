@@ -1,14 +1,6 @@
 import React from 'react';
-import {
-  Form,
-  FormGroup,
-  TextInput,
-  Modal,
-  ModalBody,
-  ModalHeader,
-  ModalFooter,
-} from '@patternfly/react-core';
-import DashboardModalFooter from '#~/concepts/dashboard/DashboardModalFooter';
+import { Form, FormGroup, TextInput } from '@patternfly/react-core';
+import FormModal from '#~/components/modals/FormModal';
 import useGenericObjectState from '#~/utilities/useGenericObjectState';
 import { useValidation } from '#~/utilities/useValidation';
 import { nodeSelectorSchema } from '#~/pages/hardwareProfiles/manage/validationUtils';
@@ -35,41 +27,42 @@ const ManageNodeSelectorModal: React.FC<ManageNodeSelectorModalProps> = ({
   };
 
   const isValidated = useValidation(nodeSelector, nodeSelectorSchema);
+  const canSubmit = isValidated.validationResult.success;
+
+  const contents = (
+    <Form>
+      <FormGroup label="Key" fieldId="key" isRequired>
+        <TextInput
+          aria-label="Node selector key input"
+          value={nodeSelector.key}
+          onChange={(_, value) => setNodeSelector('key', value)}
+          data-testid="node-selector-key-input"
+          placeholder="Example, node.kubernetes.io/instance-type"
+        />
+      </FormGroup>
+      <FormGroup label="Value" fieldId="value" isRequired>
+        <TextInput
+          aria-label="Node selector value input"
+          value={nodeSelector.value}
+          onChange={(_, value) => setNodeSelector('value', value)}
+          data-testid="node-selector-value-input"
+          placeholder="Example, m4.xlarge"
+        />
+      </FormGroup>
+    </Form>
+  );
 
   return (
-    <Modal variant="medium" isOpen onClose={onClose}>
-      <ModalHeader title={existingNodeSelector ? 'Edit node selector' : 'Add node selector'} />
-      <ModalBody>
-        <Form>
-          <FormGroup label="Key" fieldId="key" isRequired>
-            <TextInput
-              aria-label="Node selector key input"
-              value={nodeSelector.key}
-              onChange={(_, value) => setNodeSelector('key', value)}
-              data-testid="node-selector-key-input"
-              placeholder="Example, node.kubernetes.io/instance-type"
-            />
-          </FormGroup>
-          <FormGroup label="Value" fieldId="value" isRequired>
-            <TextInput
-              aria-label="Node selector value input"
-              value={nodeSelector.value}
-              onChange={(_, value) => setNodeSelector('value', value)}
-              data-testid="node-selector-value-input"
-              placeholder="Example, m4.xlarge"
-            />
-          </FormGroup>
-        </Form>
-      </ModalBody>
-      <ModalFooter>
-        <DashboardModalFooter
-          submitLabel={existingNodeSelector ? 'Update' : 'Add'}
-          onSubmit={handleSubmit}
-          onCancel={onClose}
-          isSubmitDisabled={!isValidated.validationResult.success}
-        />
-      </ModalFooter>
-    </Modal>
+    <FormModal
+      title={existingNodeSelector ? 'Edit node selector' : 'Add node selector'}
+      variant="medium"
+      onClose={onClose}
+      onSubmit={handleSubmit}
+      canSubmit={canSubmit}
+      submitLabel={existingNodeSelector ? 'Update' : 'Add'}
+      contents={contents}
+      dataTestId="manage-node-selector-modal"
+    />
   );
 };
 

@@ -1,20 +1,10 @@
 import * as React from 'react';
 import { useNavigate } from 'react-router';
-import {
-  Alert,
-  Form,
-  Stack,
-  StackItem,
-  Modal,
-  ModalBody,
-  ModalHeader,
-  ModalFooter,
-  ExpandableSection,
-} from '@patternfly/react-core';
+import { Alert, Form, Stack, StackItem, ExpandableSection } from '@patternfly/react-core';
 import { usePipelinesAPI } from '#~/concepts/pipelines/context';
 import { createPipelinesCR, deleteSecret, listPipelinesCR } from '#~/api';
 import { EMPTY_AWS_PIPELINE_DATA } from '#~/pages/projects/dataConnections/const';
-import DashboardModalFooter from '#~/concepts/dashboard/DashboardModalFooter';
+import FormModal from '#~/components/modals/FormModal';
 import { fireFormTrackingEvent } from '#~/concepts/analyticsTracking/segmentIOUtils';
 import { TrackingOutcome } from '#~/concepts/analyticsTracking/trackingProperties';
 import SamplePipelineSettingsSection from '#~/concepts/pipelines/content/configurePipelinesServer/SamplePipelineSettingsSection';
@@ -215,80 +205,78 @@ export const ConfigurePipelinesServerModal: React.FC<ConfigurePipelinesServerMod
       });
   };
 
-  return (
-    <Modal variant="medium" isOpen onClose={onCancel}>
-      <ModalHeader
-        title="Configure pipeline server"
-        description="Configuring a pipeline server enables you to create and manage pipelines."
-      />
-      <ModalBody>
-        <Stack hasGutter>
-          <StackItem>
-            <Alert
-              variant="info"
-              isInline
-              title="Pipeline server configuration cannot be edited after creation. To use a different configuration after creation, delete the pipeline server and create a new one."
-            />
-          </StackItem>
-          <StackItem>
-            <Form
-              onSubmit={(e) => {
-                e.preventDefault();
-                submit();
-              }}
-            >
-              <ObjectStorageSection
-                setConfig={setConfig}
-                config={config}
-                loaded={loaded}
-                connections={connections}
-              />
-              <ExpandableSection
-                data-testid="advanced-settings-section"
-                isIndented
-                toggleId="advanced-settings-toggle"
-                toggleText="Advanced settings"
-                onToggle={() => {
-                  setAdvancedSettingsExpanded(!advancedSettingsExpanded);
-
-                  if (!advancedSettingsExpanded) {
-                    requestAnimationFrame(() => {
-                      advancedSettingsRef.current?.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'start',
-                      });
-                    });
-                  }
-                }}
-                isExpanded={advancedSettingsExpanded}
-              >
-                <div ref={advancedSettingsRef}>
-                  <PipelinesDatabaseSection setConfig={setConfig} config={config} />
-                  {isFineTuningAvailable && (
-                    <SamplePipelineSettingsSection setConfig={setConfig} config={config} />
-                  )}
-                  <PipelinesDefinitionStorageSection setConfig={setConfig} config={config} />
-                  <PipelineCachingSection
-                    enableCaching={config.enableCaching}
-                    setEnableCaching={(enableCaching) => setConfig({ ...config, enableCaching })}
-                  />
-                </div>
-              </ExpandableSection>
-            </Form>
-          </StackItem>
-        </Stack>
-      </ModalBody>
-      <ModalFooter>
-        <DashboardModalFooter
-          submitLabel="Configure pipeline server"
-          onSubmit={submit}
-          isSubmitLoading={fetching}
-          isSubmitDisabled={!canSubmit || fetching}
-          onCancel={onCancel}
-          alertTitle="Error configuring pipeline server"
-          error={error}
+  const contents = (
+    <Stack hasGutter>
+      <StackItem>
+        <Alert
+          variant="info"
+          isInline
+          title="Pipeline server configuration cannot be edited after creation. To use a different configuration after creation, delete the pipeline server and create a new one."
         />
-      </ModalFooter>
-    </Modal>
+      </StackItem>
+      <StackItem>
+        <Form
+          onSubmit={(e) => {
+            e.preventDefault();
+            submit();
+          }}
+        >
+          <ObjectStorageSection
+            setConfig={setConfig}
+            config={config}
+            loaded={loaded}
+            connections={connections}
+          />
+          <ExpandableSection
+            data-testid="advanced-settings-section"
+            isIndented
+            toggleId="advanced-settings-toggle"
+            toggleText="Advanced settings"
+            onToggle={() => {
+              setAdvancedSettingsExpanded(!advancedSettingsExpanded);
+
+              if (!advancedSettingsExpanded) {
+                requestAnimationFrame(() => {
+                  advancedSettingsRef.current?.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start',
+                  });
+                });
+              }
+            }}
+            isExpanded={advancedSettingsExpanded}
+          >
+            <div ref={advancedSettingsRef}>
+              <PipelinesDatabaseSection setConfig={setConfig} config={config} />
+              {isFineTuningAvailable && (
+                <SamplePipelineSettingsSection setConfig={setConfig} config={config} />
+              )}
+              <PipelinesDefinitionStorageSection setConfig={setConfig} config={config} />
+              <PipelineCachingSection
+                enableCaching={config.enableCaching}
+                setEnableCaching={(enableCaching) => setConfig({ ...config, enableCaching })}
+              />
+            </div>
+          </ExpandableSection>
+        </Form>
+      </StackItem>
+    </Stack>
+  );
+
+  return (
+    <FormModal
+      title="Configure pipeline server"
+      description="Configuring a pipeline server enables you to create and manage pipelines."
+      variant="medium"
+      onClose={onCancel}
+      onSubmit={submit}
+      canSubmit={canSubmit && !fetching}
+      isSubmitting={fetching}
+      submitLabel="Configure pipeline server"
+      contents={contents}
+      alertTitle="Error configuring pipeline server"
+      error={error}
+      dataTestId="configure-pipelines-server-modal"
+    />
   );
 };

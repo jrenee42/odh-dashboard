@@ -50,7 +50,6 @@ const FormModalFooter = React.memo(
     onSubmitClick,
     onCancelClick,
     submitButtonRef,
-    cancelButtonRef,
     isSubmitDisabled,
     isSubmitting,
     error,
@@ -64,7 +63,6 @@ const FormModalFooter = React.memo(
     onSubmitClick: () => void;
     onCancelClick: () => void;
     submitButtonRef: React.RefObject<HTMLButtonElement | null>;
-    cancelButtonRef: React.RefObject<HTMLButtonElement | null>;
     isSubmitDisabled?: boolean;
     isSubmitting?: boolean;
     error?: Error | React.ReactNode;
@@ -109,7 +107,6 @@ const FormModalFooter = React.memo(
               </ActionListItem>
               <ActionListItem>
                 <Button
-                  ref={cancelButtonRef}
                   key="cancel"
                   variant="link"
                   onClick={onCancelClick}
@@ -160,7 +157,6 @@ const FormModal: React.FC<FormModalProps> = ({
   cancelButtonTestId,
 }) => {
   const submitButtonRef = useRef<HTMLButtonElement>(null);
-  const cancelButtonRef = useRef<HTMLButtonElement>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const enterPressTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const headingId = useId();
@@ -180,10 +176,6 @@ const FormModal: React.FC<FormModalProps> = ({
     onSubmitRef.current = onSubmit;
   }, [onSubmit]);
 
-  useEffect(() => {
-    onCancelRef.current = onCancel ?? onClose;
-  }, [onCancel, onClose]);
-
   // Clear the enter press timeout on unmount to prevent stale callbacks
   useEffect(
     () => () => {
@@ -197,7 +189,7 @@ const FormModal: React.FC<FormModalProps> = ({
   // Handle Enter key - trigger submit or cancel based on form validity
   const handleEnterPress = useCallback(() => {
     const shouldSubmit = canSubmitRef.current;
-    const button = shouldSubmit ? submitButtonRef.current : cancelButtonRef.current;
+    const button = shouldSubmit ? submitButtonRef.current : null;
 
     if (button) {
       // Focus the button to show visual feedback
@@ -302,7 +294,6 @@ const FormModal: React.FC<FormModalProps> = ({
             onSubmitClick={handleSubmitClick}
             onCancelClick={handleCancelClick}
             submitButtonRef={submitButtonRef}
-            cancelButtonRef={cancelButtonRef}
             isSubmitDisabled={!canSubmit}
             isSubmitting={isSubmitting}
             error={error}

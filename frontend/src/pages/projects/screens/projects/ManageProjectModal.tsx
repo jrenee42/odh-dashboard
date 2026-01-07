@@ -1,21 +1,10 @@
 import * as React from 'react';
-import {
-  Alert,
-  Button,
-  Form,
-  Stack,
-  StackItem,
-  Modal,
-  ModalBody,
-  ModalHeader,
-  ModalFooter,
-} from '@patternfly/react-core';
+import { Form } from '@patternfly/react-core';
 import { createProject, updateProject } from '#~/api';
 import { useUser } from '#~/redux/selectors';
 import { ProjectKind } from '#~/k8sTypes';
 import { ProjectsContext } from '#~/concepts/projects/ProjectsContext';
 import { fireFormTrackingEvent } from '#~/concepts/analyticsTracking/segmentIOUtils';
-
 import { TrackingOutcome } from '#~/concepts/analyticsTracking/trackingProperties';
 import K8sNameDescriptionField, {
   useK8sNameDescriptionFieldData,
@@ -24,6 +13,7 @@ import {
   isK8sNameDescriptionDataValid,
   LimitNameResourceType,
 } from '#~/concepts/k8s/K8sNameDescriptionField/utils';
+import FormModal from '#~/components/modals/FormModal';
 
 type ManageProjectModalProps = {
   editProjectData?: ProjectKind;
@@ -81,64 +71,44 @@ const ManageProjectModal: React.FC<ManageProjectModalProps> = ({ editProjectData
     }
   };
 
+  const handleCancel = () => {
+    onBeforeClose();
+    fireFormTrackingEvent(editProjectData ? 'Project Edited' : 'NewProject Created', {
+      outcome: TrackingOutcome.cancel,
+    });
+  };
+
+  const contents = (
+    <Form
+      onSubmit={(e) => {
+        e.preventDefault();
+        submit();
+      }}
+    >
+      <K8sNameDescriptionField
+        autoFocusName
+        dataTestId="manage-project-modal"
+        maxLength={250}
+        maxLengthDesc={5500}
+        {...k8sNameDescriptionData}
+      />
+    </Form>
+  );
+
   return (
-    <Modal variant="medium" isOpen onClose={() => onBeforeClose()}>
-      <ModalHeader title={editProjectData ? 'Edit project' : 'Create project'} />
-      <ModalBody>
-        <Stack hasGutter>
-          <StackItem>
-            <Form
-              onSubmit={(e) => {
-                e.preventDefault();
-                submit();
-              }}
-            >
-              <K8sNameDescriptionField
-                autoFocusName
-                dataTestId="manage-project-modal"
-                maxLength={250}
-                maxLengthDesc={5500}
-                {...k8sNameDescriptionData}
-              />
-            </Form>
-          </StackItem>
-          {error && (
-            <StackItem>
-              <Alert
-                variant="danger"
-                isInline
-                title={editProjectData ? 'Error updating project' : 'Error creating project'}
-              >
-                {error.message}
-              </Alert>
-            </StackItem>
-          )}
-        </Stack>
-      </ModalBody>
-      <ModalFooter>
-        <Button
-          key="confirm"
-          variant="primary"
-          isDisabled={!canSubmit}
-          isLoading={fetching}
-          onClick={submit}
-        >
-          {editProjectData ? 'Update' : 'Create'}
-        </Button>
-        <Button
-          key="cancel"
-          variant="link"
-          onClick={() => {
-            onBeforeClose();
-            fireFormTrackingEvent(editProjectData ? 'Project Edited' : 'NewProject Created', {
-              outcome: TrackingOutcome.cancel,
-            });
-          }}
-        >
-          Cancel
-        </Button>
-      </ModalFooter>
-    </Modal>
+    <FormModal
+      title={editProjectData ? 'Edit project' : 'Create project'}
+      onClose={() => onBeforeClose()}
+      onSubmit={submit}
+      onCancel={handleCancel}
+      canSubmit={canSubmit}
+      isSubmitting={fetching}
+      submitLabel={editProjectData ? 'Update' : 'Create'}
+      contents={contents}
+      error={error}
+      alertTitle={editProjectData ? 'Error updating project' : 'Error creating project'}
+      dataTestId="manage-project-modal"
+    />
   );
 };
 

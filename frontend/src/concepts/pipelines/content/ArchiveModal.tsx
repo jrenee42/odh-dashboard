@@ -1,19 +1,9 @@
 import * as React from 'react';
-import {
-  Flex,
-  FlexItem,
-  Stack,
-  StackItem,
-  TextInput,
-  Modal,
-  ModalBody,
-  ModalHeader,
-  ModalFooter,
-} from '@patternfly/react-core';
+import { Flex, FlexItem, Stack, StackItem, TextInput } from '@patternfly/react-core';
 import { usePipelinesAPI } from '#~/concepts/pipelines/context';
-import DashboardModalFooter from '#~/concepts/dashboard/DashboardModalFooter';
 import { fireFormTrackingEvent } from '#~/concepts/analyticsTracking/segmentIOUtils';
 import { TrackingOutcome } from '#~/concepts/analyticsTracking/trackingProperties';
+import FormModal from '#~/components/modals/FormModal';
 
 interface ArchiveModalProps {
   confirmMessage: string;
@@ -40,7 +30,7 @@ export const ArchiveModal: React.FC<ArchiveModalProps> = ({
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [error, setError] = React.useState<Error>();
   const [confirmInputValue, setConfirmInputValue] = React.useState('');
-  const isDisabled = confirmInputValue.trim() !== confirmMessage || isSubmitting;
+  const canSubmit = confirmInputValue.trim() === confirmMessage && !isSubmitting;
 
   const eventName =
     whatToArchive === 'runs' ? 'Pipeline Runs Archived' : 'Pipeline Experiment Archived';
@@ -81,9 +71,19 @@ export const ArchiveModal: React.FC<ArchiveModalProps> = ({
   }, [onSubmit, onClose, refreshAllAPI, eventName]);
 
   return (
-    <Modal isOpen variant="small" onClose={onCancelClose} data-testid={testId}>
-      <ModalHeader title={title} titleIconVariant="warning" />
-      <ModalBody>
+    <FormModal
+      title={title}
+      onClose={onCancelClose}
+      onSubmit={onConfirm}
+      canSubmit={canSubmit}
+      isSubmitting={isSubmitting}
+      submitLabel="Archive"
+      submitButtonVariant="danger"
+      variant="small"
+      dataTestId={testId}
+      error={error}
+      alertTitle={alertTitle}
+      contents={
         <Stack hasGutter>
           {children}
           <StackItem>
@@ -97,27 +97,11 @@ export const ArchiveModal: React.FC<ArchiveModalProps> = ({
                 aria-label="confirm archive input"
                 value={confirmInputValue}
                 onChange={(_e, newValue) => setConfirmInputValue(newValue)}
-                onKeyDown={(event) => {
-                  if (event.key === 'Enter' && !isDisabled) {
-                    onConfirm();
-                  }
-                }}
               />
             </Flex>
           </StackItem>
         </Stack>
-      </ModalBody>
-      <ModalFooter>
-        <DashboardModalFooter
-          onCancel={onCancelClose}
-          onSubmit={onConfirm}
-          submitLabel="Archive"
-          isSubmitLoading={isSubmitting}
-          isSubmitDisabled={isDisabled}
-          error={error}
-          alertTitle={alertTitle}
-        />
-      </ModalFooter>
-    </Modal>
+      }
+    />
   );
 };

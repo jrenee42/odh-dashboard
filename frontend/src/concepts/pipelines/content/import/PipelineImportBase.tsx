@@ -7,7 +7,6 @@ import {
   Modal,
   ModalBody,
   ModalHeader,
-  ModalFooter,
   Spinner,
   Alert,
 } from '@patternfly/react-core';
@@ -25,7 +24,7 @@ import {
 import { UpdateObjectAtPropAndValue } from '#~/pages/projects/types';
 import useDebounceCallback from '#~/utilities/useDebounceCallback';
 import NameDescriptionField from '#~/concepts/k8s/NameDescriptionField';
-import DashboardModalFooter from '#~/concepts/dashboard/DashboardModalFooter';
+import FormModal from '#~/components/modals/FormModal';
 import PipelineMigrationNoteLinks from '#~/concepts/pipelines/content/PipelineMigrationNoteLinks';
 import K8sNameDescriptionField, {
   useK8sNameDescriptionFieldData,
@@ -53,6 +52,11 @@ export type PipelineImportBaseProps = {
   children?: React.ReactNode;
 };
 
+// the pipelineUploadRadio is weird....it looks like you should be able to copy in a file but you can't (you also can't edit it inside the field)
+// and so b/c of this field, the formmodal doesn't really work for this; would need to do something so *after*
+/** the file is uploaded/drag and dropped, then pressing return would be captured.
+ * is that possible?
+ */
 const PipelineImportBase: React.FC<PipelineImportBaseProps> = ({
   title,
   submitButtonText,
@@ -204,102 +208,97 @@ const PipelineImportBase: React.FC<PipelineImportBaseProps> = ({
     );
   }
 
+  const formContents = (
+    <Form>
+      <Stack hasGutter>
+        <StackItem>
+          <FormGroup label="Project" fieldId="project-name">
+            {getDisplayNameFromK8sResource(project)}
+          </FormGroup>
+        </StackItem>
+        {children}
+        <StackItem>
+          {isKubernetesStorage ? (
+            <K8sNameDescriptionField
+              // dataTestId becomes dataTestId-{name/description}
+              dataTestId="pipeline"
+              nameLabel="Pipeline name"
+              descriptionLabel="Pipeline description"
+              maxLength={NAME_CHARACTER_LIMIT}
+              maxLengthDesc={DESCRIPTION_CHARACTER_LIMIT}
+              nameHelperText={
+                hasDuplicateName ? (
+                  <DuplicateNameHelperText isError name={displayName} />
+                ) : undefined
+              }
+              data={k8sNameDescData}
+              onDataChange={handleK8sNameDescDataChange}
+            />
+          ) : (
+            <NameDescriptionField
+              nameFieldId="pipeline-name"
+              nameFieldLabel="Pipeline name"
+              descriptionFieldLabel="Pipeline description"
+              descriptionFieldId="pipeline-description"
+              data={{ name: displayName, description: description || '' }}
+              hasNameError={hasDuplicateName}
+              setData={(newData) => {
+                setData('displayName', newData.name);
+                setData('name', newData.name);
+                setData('description', newData.description);
+              }}
+              maxLengthName={NAME_CHARACTER_LIMIT}
+              maxLengthDesc={DESCRIPTION_CHARACTER_LIMIT}
+              onNameChange={(value) => {
+                setHasDuplicateName(false);
+                debouncedCheckForDuplicateName(value);
+              }}
+              nameHelperText={
+                hasDuplicateName ? (
+                  <DuplicateNameHelperText isError name={displayName} />
+                ) : undefined
+              }
+            />
+          )}
+        </StackItem>
+        <StackItem>
+          <PipelineUploadRadio
+            fileContents={fileContents}
+            setFileContents={(value) => {
+              setData('fileContents', value);
+              setError(undefined);
+            }}
+            pipelineUrl={pipelineUrl}
+            setPipelineUrl={(url) => setData('pipelineUrl', url)}
+            uploadOption={uploadOption}
+            setUploadOption={(option) => setData('uploadOption', option)}
+          />
+        </StackItem>
+      </Stack>
+    </Form>
+  );
+
   return (
-    <Modal
-      isOpen
+    <FormModal
+      title={title}
       onClose={() => onBeforeClose()}
+      onSubmit={onSubmit}
+      canSubmit={!isImportButtonDisabled}
+      isSubmitting={importing}
+      submitLabel={submitButtonText}
       variant="medium"
-      data-testid={PIPELINE_IMPORT_BASE_TEST_ID}
-    >
-      <ModalHeader title={title} />
-      <ModalBody>
-        <Form>
-          <Stack hasGutter>
-            <StackItem>
-              <FormGroup label="Project" fieldId="project-name">
-                {getDisplayNameFromK8sResource(project)}
-              </FormGroup>
-            </StackItem>
-            {children}
-            <StackItem>
-              {isKubernetesStorage ? (
-                <K8sNameDescriptionField
-                  // dataTestId becomes dataTestId-{name/description}
-                  dataTestId="pipeline"
-                  nameLabel="Pipeline name"
-                  descriptionLabel="Pipeline description"
-                  maxLength={NAME_CHARACTER_LIMIT}
-                  maxLengthDesc={DESCRIPTION_CHARACTER_LIMIT}
-                  nameHelperText={
-                    hasDuplicateName ? (
-                      <DuplicateNameHelperText isError name={displayName} />
-                    ) : undefined
-                  }
-                  data={k8sNameDescData}
-                  onDataChange={handleK8sNameDescDataChange}
-                />
-              ) : (
-                <NameDescriptionField
-                  nameFieldId="pipeline-name"
-                  nameFieldLabel="Pipeline name"
-                  descriptionFieldLabel="Pipeline description"
-                  descriptionFieldId="pipeline-description"
-                  data={{ name: displayName, description: description || '' }}
-                  hasNameError={hasDuplicateName}
-                  setData={(newData) => {
-                    setData('displayName', newData.name);
-                    setData('name', newData.name);
-                    setData('description', newData.description);
-                  }}
-                  maxLengthName={NAME_CHARACTER_LIMIT}
-                  maxLengthDesc={DESCRIPTION_CHARACTER_LIMIT}
-                  onNameChange={(value) => {
-                    setHasDuplicateName(false);
-                    debouncedCheckForDuplicateName(value);
-                  }}
-                  nameHelperText={
-                    hasDuplicateName ? (
-                      <DuplicateNameHelperText isError name={displayName} />
-                    ) : undefined
-                  }
-                />
-              )}
-            </StackItem>
-            <StackItem>
-              <PipelineUploadRadio
-                fileContents={fileContents}
-                setFileContents={(value) => {
-                  setData('fileContents', value);
-                  setError(undefined);
-                }}
-                pipelineUrl={pipelineUrl}
-                setPipelineUrl={(url) => setData('pipelineUrl', url)}
-                uploadOption={uploadOption}
-                setUploadOption={(option) => setData('uploadOption', option)}
-              />
-            </StackItem>
-          </Stack>
-        </Form>
-      </ModalBody>
-      <ModalFooter>
-        <DashboardModalFooter
-          onCancel={() => onBeforeClose()}
-          onSubmit={onSubmit}
-          submitLabel={submitButtonText}
-          isSubmitLoading={importing}
-          isSubmitDisabled={isImportButtonDisabled}
-          error={error}
-          alertTitle={
-            isArgoWorkflow
-              ? PIPELINE_ARGO_ERROR
-              : isV1PipelineFile
-              ? 'Pipeline update and recompile required'
-              : 'Error creating pipeline'
-          }
-          alertLinks={isV1PipelineFile ? <PipelineMigrationNoteLinks /> : undefined}
-        />
-      </ModalFooter>
-    </Modal>
+      dataTestId={PIPELINE_IMPORT_BASE_TEST_ID}
+      error={error}
+      alertTitle={
+        isArgoWorkflow
+          ? PIPELINE_ARGO_ERROR
+          : isV1PipelineFile
+          ? 'Pipeline update and recompile required'
+          : 'Error creating pipeline'
+      }
+      alertLinks={isV1PipelineFile ? <PipelineMigrationNoteLinks /> : undefined}
+      contents={formContents}
+    />
   );
 };
 

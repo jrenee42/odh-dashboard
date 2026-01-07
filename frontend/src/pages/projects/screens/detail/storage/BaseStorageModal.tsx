@@ -1,16 +1,8 @@
 import * as React from 'react';
-import {
-  Form,
-  Stack,
-  StackItem,
-  Modal,
-  ModalBody,
-  ModalHeader,
-  ModalFooter,
-} from '@patternfly/react-core';
+import { Form, Stack, StackItem } from '@patternfly/react-core';
 import { PersistentVolumeClaimKind } from '#~/k8sTypes';
 import CreateNewStorageSection from '#~/pages/projects/screens/spawner/storage/CreateNewStorageSection';
-import DashboardModalFooter from '#~/concepts/dashboard/DashboardModalFooter';
+import FormModal from '#~/components/modals/FormModal';
 import { useDefaultStorageClass } from '#~/pages/projects/screens/spawner/storage/useDefaultStorageClass';
 import { useCreateStorageObject } from '#~/pages/projects/screens/spawner/storage/utils';
 import { StorageData } from '#~/pages/projects/types';
@@ -66,7 +58,7 @@ const BaseStorageModal: React.FC<BaseStorageModalProps> = ({
     }
   }, [createData.storageClassName, setCreateData, existingPvc]);
 
-  const canCreate = !actionInProgress && nameDescValid && isValid;
+  const canCreate = !actionInProgress && !!nameDescValid && isValid;
 
   const submit = () => {
     setError(undefined);
@@ -80,45 +72,51 @@ const BaseStorageModal: React.FC<BaseStorageModalProps> = ({
       });
   };
 
+  const handleCancel = React.useCallback(() => {
+    onClose(false);
+  }, [onClose]);
+
+  const contents = (
+    <Form
+      onSubmit={(e) => {
+        e.preventDefault();
+        submit();
+      }}
+    >
+      <Stack hasGutter>
+        <StackItem>
+          <CreateNewStorageSection
+            data={createData}
+            setData={setCreateData}
+            currentStatus={existingPvc?.status}
+            autoFocusName
+            onNameChange={onNameChange}
+            setValid={setNameDescValid}
+            hasDuplicateName={hasDuplicateName}
+            disableStorageClassSelect={!!existingPvc}
+            editableK8sName={!existingPvc}
+          />
+        </StackItem>
+        {children}
+      </Stack>
+    </Form>
+  );
+
   return (
-    <Modal variant="medium" isOpen onClose={() => onClose(false)}>
-      <ModalHeader title={title} description={description} />
-      <ModalBody>
-        <Form
-          onSubmit={(e) => {
-            e.preventDefault();
-            submit();
-          }}
-        >
-          <Stack hasGutter>
-            <StackItem>
-              <CreateNewStorageSection
-                data={createData}
-                setData={setCreateData}
-                currentStatus={existingPvc?.status}
-                autoFocusName
-                onNameChange={onNameChange}
-                setValid={setNameDescValid}
-                hasDuplicateName={hasDuplicateName}
-                disableStorageClassSelect={!!existingPvc}
-                editableK8sName={!existingPvc}
-              />
-            </StackItem>
-            {children}
-          </Stack>
-        </Form>
-      </ModalBody>
-      <ModalFooter>
-        <DashboardModalFooter
-          submitLabel={submitLabel}
-          onSubmit={submit}
-          onCancel={() => onClose(false)}
-          isSubmitDisabled={!canCreate}
-          error={error}
-          alertTitle="Error creating storage"
-        />
-      </ModalFooter>
-    </Modal>
+    <FormModal
+      title={title}
+      description={description}
+      variant="medium"
+      onClose={handleCancel}
+      onSubmit={submit}
+      canSubmit={canCreate}
+      isSubmitting={actionInProgress}
+      submitLabel={submitLabel}
+      contents={contents}
+      alertTitle="Error creating storage"
+      error={error}
+      dataTestId="base-storage-modal"
+    />
   );
 };
 

@@ -1,7 +1,6 @@
 import React from 'react';
-import { Modal, ModalBody, ModalHeader, ModalFooter } from '@patternfly/react-core';
 import { usePipelinesAPI } from '#~/concepts/pipelines/context';
-import DashboardModalFooter from '#~/concepts/dashboard/DashboardModalFooter';
+import FormModal from '#~/components/modals/FormModal';
 import { fireFormTrackingEvent } from '#~/concepts/analyticsTracking/segmentIOUtils';
 import {
   FormTrackingEventProperties,
@@ -63,21 +62,21 @@ export const RestoreModal: React.FC<RestoreModalProps> = ({
     }
   }, [onSubmit, fireFormTrackingEventForRestore, refreshAllAPI, onCancel]);
 
+  // right now; since this is a 'form' modal; the entire key does the submit: which is to un-archive/restore
+  // the runs.  is this what we want??? figure this out TBD
   return (
-    <Modal isOpen variant="small" onClose={onCancel} data-testid={testId}>
-      <ModalHeader title={title} />
-      <ModalBody>{children}</ModalBody>
-      <ModalFooter>
-        <DashboardModalFooter
-          onSubmit={onConfirm}
-          isSubmitDisabled={isSubmitting}
-          isSubmitLoading={isSubmitting}
-          submitLabel="Restore"
-          onCancel={onCancel}
-          alertTitle={alertTitle}
-          error={error}
-        />
-      </ModalFooter>
-    </Modal>
+    <FormModal
+      title={title}
+      onClose={onCancel}
+      onSubmit={onConfirm}
+      canSubmit={!isSubmitting}
+      isSubmitting={isSubmitting}
+      submitLabel="Restore"
+      variant="small"
+      dataTestId={testId}
+      error={error}
+      alertTitle={alertTitle}
+      contents={children}
+    />
   );
 };
