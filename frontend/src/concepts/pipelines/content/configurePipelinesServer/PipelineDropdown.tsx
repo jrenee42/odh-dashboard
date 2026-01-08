@@ -1,12 +1,4 @@
-import {
-  Menu,
-  MenuContent,
-  MenuItem,
-  Dropdown,
-  MenuItemAction,
-  MenuList,
-  MenuToggle,
-} from '@patternfly/react-core';
+import { Divider, Dropdown, DropdownItem, DropdownList, MenuToggle } from '@patternfly/react-core';
 import React from 'react';
 import { EyeIcon, EyeSlashIcon, OptimizeIcon } from '@patternfly/react-icons';
 import { AWSDataEntry } from '#~/pages/projects/types';
@@ -28,7 +20,7 @@ export const PipelineDropdown = ({
   connections,
 }: PipelineDropdownProps): React.JSX.Element => {
   const [isOpen, setIsOpen] = React.useState(false);
-  const [showPassword, setShowPassword] = React.useState<boolean[]>([]);
+  const [showPassword, setShowPassword] = React.useState<{ [key: string]: boolean }>({});
 
   const existingConnection = (connection: Connection): AWSDataEntry | null =>
     convertObjectStorageSecretData(connection).filter((dataItem) =>
@@ -36,42 +28,57 @@ export const PipelineDropdown = ({
     );
 
   const onToggle = () => {
-    setShowPassword([]);
+    setShowPassword({});
     setIsOpen(!isOpen);
   };
 
-  const onSelect = (
-    _event: React.MouseEvent<Element, MouseEvent> | undefined,
-    option?: string | number | null,
-  ) => {
+  const onSelect = (connectionName: string) => {
     setIsOpen(false);
-    if (typeof option === 'string') {
-      const value = connections.find((d) => d.metadata.name === option);
-      if (!value) {
-        return;
-      }
-      const optionValue = existingConnection(value);
-      const updatedObjectStorageValue = config.objectStorage.newValue.map((item) => {
-        const matchingOption = optionValue?.find((optItem) => optItem.key === item.key);
-
-        return {
-          ...item,
-          value: matchingOption ? matchingOption.value : item.value,
-        };
-      });
-
-      setConfig({
-        ...config,
-        objectStorage: {
-          newValue: updatedObjectStorageValue,
-        },
-      });
+    const value = connections.find((d) => d.metadata.name === connectionName);
+    if (!value) {
+      return;
     }
+    const optionValue = existingConnection(value);
+    const updatedObjectStorageValue = config.objectStorage.newValue.map((item) => {
+      const matchingOption = optionValue?.find((optItem) => optItem.key === item.key);
+
+      return {
+        ...item,
+        value: matchingOption ? matchingOption.value : item.value,
+      };
+    });
+
+    setConfig({
+      ...config,
+      objectStorage: {
+        newValue: updatedObjectStorageValue,
+      },
+    });
   };
+
+  const toggleShowPassword = (
+    connectionName: string,
+    e: React.MouseEvent | React.KeyboardEvent,
+  ) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setShowPassword((prev) => ({
+      ...prev,
+      [connectionName]: !prev[connectionName],
+    }));
+  };
+
   return (
     <Dropdown
-      onOpenChange={(isOpened) => setIsOpen(isOpened)}
-      popperProps={{ position: 'right', maxWidth: '600px' }}
+      isOpen={isOpen}
+      onOpenChange={(open) => setIsOpen(open)}
+      onSelect={(_event, value) => {
+        if (typeof value === 'string') {
+          onSelect(value);
+        }
+      }}
+      shouldFocusFirstItemOnOpen
+      focusTimeoutDelay={100}
       toggle={(toggleRef) => (
         <MenuToggle
           data-testid="select-connection"
@@ -80,36 +87,22 @@ export const PipelineDropdown = ({
           isExpanded={isOpen}
           icon={<OptimizeIcon />}
         >
-          Autofill from connection
+          Autofill from connection 88a
         </MenuToggle>
       )}
-      isOpen={isOpen}
+      popperProps={{ position: 'right', maxWidth: '600px' }}
     >
-      <Menu onSelect={onSelect} isScrollable isPlain>
-        <MenuContent>
-          <MenuList>
-            {connections.map((dataItem, index) => (
-              <MenuItem
-                key={dataItem.metadata.name}
-                actions={
-                  <MenuItemAction
-                    icon={showPassword[index] ? <EyeSlashIcon /> : <EyeIcon />}
-                    actionId={index}
-                    // eslint-disable-next-line no-console
-                    onClick={(ev) => {
-                      ev.preventDefault();
-                      ev.stopPropagation();
-                      setShowPassword((s) => [
-                        ...s.slice(0, index),
-                        !s[index],
-                        ...s.slice(index + 1),
-                      ]);
-                    }}
-                    aria-label={dataItem.metadata.name}
-                  />
-                }
+      <DropdownList>
+        {connections.map((dataItem, index) => {
+          const connectionName = dataItem.metadata.name;
+          const isPasswordVisible = showPassword[connectionName];
+          return (
+            <React.Fragment key={connectionName}>
+              {index > 0 && <Divider component="li" />}
+              <DropdownItem
+                value={connectionName}
                 description={
-                  showPassword[index] ? (
+                  isPasswordVisible ? (
                     <>
                       {existingConnection(dataItem)?.map(
                         (field) =>
@@ -124,14 +117,31 @@ export const PipelineDropdown = ({
                     '•••••••••••••••••'
                   )
                 }
-                itemId={dataItem.metadata.name}
               >
-                {getDisplayNameFromK8sResource(dataItem)}
-              </MenuItem>
-            ))}
-          </MenuList>
-        </MenuContent>
-      </Menu>
+                <span style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
+                  <span>{getDisplayNameFromK8sResource(dataItem)}</span>
+                  <span
+                    role="button"
+                    tabIndex={0}
+                    onClick={(e) => toggleShowPassword(connectionName, e)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        toggleShowPassword(connectionName, e);
+                      }
+                    }}
+                    aria-label={
+                      isPasswordVisible ? 'Hide connection details' : 'Show connection details'
+                    }
+                    style={{ cursor: 'pointer', marginLeft: '8px' }}
+                  >
+                    {isPasswordVisible ? <EyeSlashIcon /> : <EyeIcon />}
+                  </span>
+                </span>
+              </DropdownItem>
+            </React.Fragment>
+          );
+        })}
+      </DropdownList>
     </Dropdown>
   );
 };
