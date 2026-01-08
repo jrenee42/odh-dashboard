@@ -56,10 +56,7 @@ export const PipelineDropdown = ({
     });
   };
 
-  const toggleShowPassword = (
-    connectionName: string,
-    e: React.MouseEvent | React.KeyboardEvent,
-  ) => {
+  const toggleShowPassword = (connectionName: string, e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     setShowPassword((prev) => ({
@@ -87,7 +84,7 @@ export const PipelineDropdown = ({
           isExpanded={isOpen}
           icon={<OptimizeIcon />}
         >
-          Autofill from connection 88a
+          Autofill from connection 981
         </MenuToggle>
       )}
       popperProps={{ position: 'right', maxWidth: '600px' }}
@@ -101,6 +98,10 @@ export const PipelineDropdown = ({
               {index > 0 && <Divider component="li" />}
               <DropdownItem
                 value={connectionName}
+                onClick={() => {
+                  console.log('argh', connectionName);
+                  onSelect(connectionName);
+                }}
                 description={
                   isPasswordVisible ? (
                     <>
@@ -121,14 +122,7 @@ export const PipelineDropdown = ({
                 <span style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
                   <span>{getDisplayNameFromK8sResource(dataItem)}</span>
                   <span
-                    role="button"
-                    tabIndex={0}
                     onClick={(e) => toggleShowPassword(connectionName, e)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        toggleShowPassword(connectionName, e);
-                      }
-                    }}
                     aria-label={
                       isPasswordVisible ? 'Hide connection details' : 'Show connection details'
                     }
