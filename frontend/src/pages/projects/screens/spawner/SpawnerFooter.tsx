@@ -244,6 +244,7 @@ const SpawnerFooter: React.FC<SpawnerFooterProps> = ({
   };
 
   const onCreateNotebook = async () => {
+    console.log('ack; avo: pressed onCreateNotebook button!!!');
     handleStart();
     createNotebookPromise(true)
       .then(() =>

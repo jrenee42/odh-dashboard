@@ -40,9 +40,15 @@ export const createModalEnterHandler = (
 
       // Don't capture Enter for dropdown/select menu items
       // PatternFly Select and Dropdown use these roles for their options
+      // Also allow combobox (typeahead selects where focus stays on input)
       if (target instanceof HTMLElement) {
         const role = target.getAttribute('role');
-        if (role === 'option' || role === 'menuitem' || role === 'menuitemradio') {
+        if (
+          role === 'option' ||
+          role === 'menuitem' ||
+          role === 'menuitemradio' ||
+          role === 'combobox'
+        ) {
           return;
         }
       }

@@ -1,16 +1,5 @@
 import React from 'react';
-import {
-  Button,
-  Flex,
-  FlexItem,
-  Form,
-  FormGroup,
-  Truncate,
-  Modal,
-  ModalBody,
-  ModalHeader,
-  ModalFooter,
-} from '@patternfly/react-core';
+import { Flex, FlexItem, Form, FormGroup, Truncate } from '@patternfly/react-core';
 import { MultiSelection, SelectionOptions } from '#~/components/MultiSelection';
 import { Connection, ConnectionTypeConfigMapObj } from '#~/concepts/connectionTypes/types';
 import {
@@ -18,6 +7,7 @@ import {
   getDisplayNameFromK8sResource,
 } from '#~/concepts/k8s/utils';
 import { getConnectionTypeRef } from '#~/concepts/connectionTypes/utils';
+import FormModal from '#~/components/modals/FormModal';
 import { connectionEnvVarConflicts, DuplicateEnvVarWarning } from './DuplicateEnvVarsWarning';
 
 type Props = {
@@ -80,10 +70,19 @@ export const SelectConnectionsModal: React.FC<Props> = ({
     [selectedConnections],
   );
 
+  const canSubmit = selectionOptions.some((selection) => selection.selected);
+
   return (
-    <Modal isOpen variant="medium" onClose={onClose}>
-      <ModalHeader title="Attach existing connections" />
-      <ModalBody>
+    <FormModal
+      title="Attach existing connections"
+      onClose={onClose}
+      onSubmit={() => onSave(selectedConnections)}
+      canSubmit={canSubmit}
+      submitLabel="Attach"
+      variant="medium"
+      dataTestId="select-connections-modal"
+      submitButtonTestId="attach-button"
+      contents={
         <Form onSubmit={(e) => e.preventDefault()}>
           {envVarConflicts.length > 0 && (
             <DuplicateEnvVarWarning envVarConflicts={envVarConflicts} />
@@ -107,23 +106,7 @@ export const SelectConnectionsModal: React.FC<Props> = ({
             />
           </FormGroup>
         </Form>
-      </ModalBody>
-      <ModalFooter>
-        <Button
-          data-testid="attach-button"
-          key="attach-button"
-          variant="primary"
-          isDisabled={selectionOptions.every((selection) => selection.selected === false)}
-          onClick={() => {
-            onSave(selectedConnections);
-          }}
-        >
-          Attach
-        </Button>
-        <Button key="cancel-button" variant="secondary" onClick={onClose}>
-          Cancel
-        </Button>
-      </ModalFooter>
-    </Modal>
+      }
+    />
   );
 };
