@@ -38,7 +38,7 @@ export const SelectConnectionsModal: React.FC<Props> = ({
       const category = connectionTypes
         .find((type) => getConnectionTypeRef(c) === type.metadata.name)
         ?.data?.category?.join(', ');
-
+      console.log('category????', category);
       return {
         id: c.metadata.name,
         name: getDisplayNameFromK8sResource(c),
@@ -84,7 +84,7 @@ export const SelectConnectionsModal: React.FC<Props> = ({
     <Modal isOpen variant="medium" onClose={onClose}>
       <ModalHeader title="Attach existing connections" />
       <ModalBody>
-        <Form>
+        <Form onSubmit={(e) => e.preventDefault()}>
           {envVarConflicts.length > 0 && (
             <DuplicateEnvVarWarning envVarConflicts={envVarConflicts} />
           )}
