@@ -455,9 +455,20 @@ export const useNotebookStatus = (
   isNotebookRunning: boolean,
   currentUserNotebookPodUID: string,
 ): [status: NotebookStatus | null, events: EventKind[]] => {
+  const notebookName = notebook?.metadata.name ?? '';
+  const notebookNamespace = notebook?.metadata.namespace ?? '';
+
+  console.log('[DEBUG-STATUS] useNotebookStatus called:', {
+    notebookName,
+    notebookNamespace,
+    spawnInProgress,
+    isNotebookRunning,
+    currentUserNotebookPodUID: currentUserNotebookPodUID || '(empty)',
+  });
+
   const [events] = useWatchNotebookEvents(
-    notebook?.metadata.namespace ?? '',
-    notebook?.metadata.name ?? '',
+    notebookNamespace,
+    notebookName,
     currentUserNotebookPodUID,
   );
 
@@ -467,12 +478,26 @@ export const useNotebookStatus = (
       ? new Date(notebook.metadata.creationTimestamp ?? 0)
       : null);
 
+  console.log('[DEBUG-STATUS] For notebook', notebookName, ':', {
+    rawEventCount: events.length,
+    lastActivity: lastActivity?.toISOString(),
+  });
+
   if (!notebook || !lastActivity) {
     // Notebook not started, we don't have a filter time, ignore
+    console.log('[DEBUG-STATUS] Returning early - no notebook or lastActivity:', notebookName);
     return [null, []];
   }
 
   const [filteredEvents, thisInstanceEvents, gracePeriod] = filterEvents(events, lastActivity);
+
+  console.log('[DEBUG-STATUS] After filterEvents for', notebookName, ':', {
+    filteredCount: filteredEvents.length,
+    thisInstanceCount: thisInstanceEvents.length,
+    gracePeriod,
+    filteredReasons: filteredEvents.map((e) => e.reason),
+  });
+
   if (filteredEvents.length === 0) {
     return [null, thisInstanceEvents];
   }

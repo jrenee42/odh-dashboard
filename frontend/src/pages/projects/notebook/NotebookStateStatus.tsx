@@ -46,12 +46,27 @@ const NotebookStateStatus: React.FC<NotebookStateStatusProps> = ({
 }) => {
   const navigate = useNavigate();
   const { notebook, isStarting, isRunning, isStopping, runningPodUid } = notebookState;
+
+  console.log('[DEBUG-STATE] NotebookStateStatus render:', {
+    notebookName: notebook.metadata.name,
+    isStarting,
+    isRunning,
+    isStopping,
+    runningPodUid: runningPodUid || '(empty)',
+  });
+
   const [unstableNotebookStatus, events] = useNotebookStatus(
     isStarting,
     notebook,
     isRunning,
     runningPodUid,
   );
+
+  console.log('[DEBUG-STATE] Events received for', notebook.metadata.name, ':', {
+    eventCount: events.length,
+    status: unstableNotebookStatus,
+  });
+
   const notebookStatus = useDeepCompareMemoize(unstableNotebookStatus);
   const isError = notebookStatus?.currentStatus === EventStatus.ERROR;
   const isStopped = !isError && !isRunning && !isStarting && !isStopping;

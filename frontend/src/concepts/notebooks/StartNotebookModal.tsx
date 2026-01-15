@@ -85,6 +85,10 @@ const StartNotebookModal: React.FC<StartNotebookModalProps> = ({
   const inProgress = !isStopped && (isStarting || isStopping || !isRunning);
   const [activeTab, setActiveTab] = React.useState<string>(PROGRESS_TAB);
 
+  console.log('in modal; notebook???', notebook);
+  const notebookName = notebook ? `${notebook.metadata.name} ` : null;
+  // const nameLine = notebookName ? <div> For Notebook: {notebookName}</div> : null;
+
   React.useEffect(() => {
     if (isStarting && !isRunning) {
       if (!notebookStatus) {
@@ -247,7 +251,7 @@ const StartNotebookModal: React.FC<StartNotebookModalProps> = ({
         data-testid="notebook-status-modal-header"
         title={
           <Flex gap={{ default: 'gapMd' }} alignItems={{ default: 'alignItemsCenter' }}>
-            <FlexItem>Workbench status</FlexItem>
+            <FlexItem>{notebookName}Workbench status</FlexItem>
             <FlexItem>
               <NotebookStatusLabel
                 isStarting={isStarting && !isRunning}
